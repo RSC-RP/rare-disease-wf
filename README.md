@@ -40,11 +40,6 @@ Make your own fork on Bitbucket (recommended), or simply clone this repo using
 git clone ssh://git@childrens-atlassian:7999/rp/rare-disease-wf.git
 ```
 
-**To run an example dataset:** This workflow comes with tiny example BAMs and a
-VCF from the Genome in a Bottle (GIAB) Ashkenazim trio. To run the pipeline on
-this dataset, the only thing you have to change in `nextflow.config` is the
-`project` parameter.
-
 **To run your own data:** You should open `nextflow.config` and edit it to
 point to your own files. The params that you are likely to need to change are
 closest to the top, starting from `project` and going down to `outdir`.
@@ -70,6 +65,11 @@ pipeline or just the trio analysis (variant filtering) pipeline.
 Note that although the example dataset only contains one family, yours can
 contain many. The example dataset is a VCF, but it is fine to use a gzipped
 VCF or a BCF.
+
+**To run an example dataset:** This workflow comes with tiny example BAMs and a
+VCF from the Genome in a Bottle (GIAB) Ashkenazim trio. To run the pipeline on
+this dataset, the only thing you have to change in `nextflow.config` is the
+`project` parameter.
 
 When you are ready to run the workflow, you may want to start a `screen` or `tmux`
 session so that you can close the window if needed.  Use `qsub` to start an interactive
