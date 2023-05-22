@@ -1,0 +1,17 @@
+name: filter_pathogenic
+description: |
+  Filter a VCF to only retain variants with evidence of pathogenicity.
+  Looks at INFO column to see MetaSVM and FATHMM predictions, MVP, CADD, DANN
+  and GERP++ scores, and clinical significance according to ClinVar.
+tools:
+  - Python
+input:
+  - invcf:
+      type: file
+      description: Annotated VCF to filter.
+  - outvcf:
+      type: file
+      description: Filtered VCF.
+      pattern: "*.pathogenic.{vcf}"
+authors:
+  - "@lvclark"

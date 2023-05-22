@@ -1,0 +1,38 @@
+name: incidental_findings
+description: |
+  Takes a VCF that has already been filtered using FILTER_PATHOGENIC, and
+  searches for any variants within genes listed by the American College of
+  Medical Genetics and Genomics. Findings are output on a per-sample basis
+  for sharing with clinicians/research subjects.
+keywords:
+  - vcf
+tools:
+  - VariantAnnotation
+input:
+  - invcf:
+      type: file
+      description: |
+        VCF that has already been filtered to only contain variants that have
+        been flagged as potentially pathogenic by at least one annotation tool.
+  - txdb:
+      type: string
+      description: |
+        Name of Bioconductor TxDb package containing gene locations, for example
+        TxDb.Hsapiens.UCSC.hg19.knownGene.
+  - build:
+      type: string
+      description: Genome build, for example 'hg19'.
+  - sample_list:
+      type: file
+      description: |
+        Plain text file with one sample name per line, listing samples for which
+        to return findings. This should only be participants who have consented
+        to receive indicidental findings.
+output:
+  - output:
+      type: files
+      description: |
+        Plain text files, one per sample (omitting samples with no incidental
+        findings), describing the variants found.
+authors:
+  - "@lvclark"

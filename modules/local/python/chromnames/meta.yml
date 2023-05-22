@@ -1,0 +1,20 @@
+name: chromnames
+description: Extract chromosome names from FAIDX file
+keywords:
+  - fai
+  - faidx
+  - index
+tools:
+  - python
+input:
+  - fai
+      type: file
+      description: Reference genome index
+output:
+  - stdout
+      type: string
+      description: |
+        All chromosome names in order from the first column of the FAIDX,
+        separated by spaces. There is a line break at the end of the string.
+authors:
+  - "@lvclark"

@@ -1,0 +1,13 @@
+name: preprocessvcf
+description: |
+  This main.nf file contains two subworkflows, preprocessvcf, and referencedict.
+  These are working but deprecated for now, since they mainly functioned to lift
+  over the VCF from hg19 to hg38, before I realized that I didn't need to do that
+  for the tools that I wanted to use, and Andrew Timberlake wants the final results
+  in hg19 anyway. The referencedict subworkflow creates a Picard dictionary for a
+  reference genome and saves it in the same directory as the reference genome,
+  which can be handy in some cases, but not if we are pointing to /gpfs/shared_data
+  for references.  The preprocessvcf subworkflow converts chromosome names to UCSC
+  format, corrects the formatting of indels, and then performs the liftover to hg38.
+authors:
+  - "@lvclark"

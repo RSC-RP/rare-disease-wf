@@ -1,0 +1,29 @@
+name: mvp_anno
+description: |
+  Annotate a VCF with pathogenicity scores according to MVP. Since there are rare
+  cases where the MVP database does not match the reference genome and annotation,
+  the reference allele and predicted amino acid change are compared between the VCF
+  and the MVP database. Variants that do not match are ignored, with a message printed
+  to the output.
+tools:
+  - python
+  - mvp:
+      description: |
+        MVP (Missense Variant Pathogenicity prediction) predicts pathogenicity using
+        a deep residual network. A table with a predicted score for every possible
+        missense mutation in the hg19 genome is provided.
+      homepage: https://figshare.com/articles/dataset/Predicting_pathogenicity_of_missense_variants_by_deep_learning/13204118
+      doi: 10.1038/s41467-020-20847-0
+input:
+  - invcf:
+      type: file
+      description: VCF to annotate. Must be hg19, and already annotated with bcftools csq.
+  - mvp_tab:
+      type: file
+      description: File MVP_score_hg19.txt available from Figshare.
+output:
+  - outvcf:
+      type: file
+      description: Annotated VCF.
+authors:
+  - "@lvclark"

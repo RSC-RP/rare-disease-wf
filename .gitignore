@@ -1,0 +1,5 @@
+.nextflow*
+log/
+logs/
+*.code-workspace
+.Rproj.user

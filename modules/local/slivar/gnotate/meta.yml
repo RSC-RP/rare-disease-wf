@@ -1,0 +1,32 @@
+name: slivar_gnotate
+description: |
+  Annotate a VCF with allele frequencies and number of homozygotes from gnomAD,
+  as well as estimates of impact from Slivar accoring to bcftools csq and snpEff
+  results.
+tools:
+  - slivar:
+      description: |
+        slivar is a set of command-line tools that enables rapid querying and
+        filtering of VCF files. It facilitates operations on trios and groups
+        and allows arbitrary expressions using simple javascript.
+      homepage: https://github.com/brentp/slivar
+      doi: 10.1038/s41525-021-00227-3
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: file
+      description: |
+        Input VCF that has already been annotated with bcftools csq and snpEff.
+  - slivar_zip:
+      type: file
+      description: |
+        Zip file containing gnomAD annotations.
+        See https://github.com/brentp/slivar#gnotation-files.
+output:
+  - outvcf:
+      type: file
+      description: VCF with Slivar annotations added.
+      pattern: "*.{gnotate.vcf}"
+authors:
+  - "@lvclark"
+  - "@brentp"

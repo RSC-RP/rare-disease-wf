@@ -1,0 +1,4 @@
+sample	affected	batch	favorite_animal
+HG002	TRUE	batch1	bird
+HG003	FALSE	batch1	cat
+HG004	FALSE	batch2	dog

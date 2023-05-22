@@ -1,0 +1,23 @@
+name: fileorder
+description: |
+  Put a set of files in order according to chromosome names. The algorithm is
+  designed to be fairly robust, matching chromosome names to file names without
+  requiring information about where the chromosome name should be located within
+  the file name.
+tools:
+  - python
+input:
+  - files:
+      type: list
+      description: List of files that need to be sorted.
+  - chromstring:
+      type: string
+      description: String such as that output by CHROMNAMES. Chromosome names, separated by spaces.
+output:
+  - stdout:
+      type: string
+      description: |
+        File names, separated by spaces, ordered according to chromstring. There is a line break
+        at the end.
+authors:
+  - "@lvclark"

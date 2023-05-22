@@ -1,0 +1,24 @@
+name: create_sequence_dictionary
+description: Make a sequence dictionary for a reference genome for use with Picard.
+tools:
+  - CreateSequenceDictionary:
+      description: |
+        Creates a sequence dictionary file (with ".dict" extension) from a reference
+        sequence provided in FASTA format, which is required by many processing and
+        analysis tools. The output file contains a header but no SAMRecords, and the
+        header contains only sequence records.
+      homepage: https://broadinstitute.github.io/picard/
+      documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360036712531-CreateSequenceDictionary-Picard-
+      tool_dev_url: https://github.com/broadinstitute/picard
+      licence: ["MIT"]
+input:
+  - fasta:
+      type: file
+      description: Reference genome FASTA. May be gzipped.
+output:
+  - outdict:
+      type: file
+      description: Picard dictionary.
+      pattern: "*.{dict}"
+authors:
+  - "@lvclark"

@@ -1,0 +1,3 @@
+Ashkenazim	HG002	HG003	HG004	1	2
+Ashkenazim	HG003	-9	-9	1	1
+Ashkenazim	HG004	-9	-9	2	1

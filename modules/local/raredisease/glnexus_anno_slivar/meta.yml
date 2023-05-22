@@ -1,0 +1,9 @@
+name: glnexus_anno_slivar
+description: |
+  Perform joint genotype calling across GVCFs, normalize indels, predict mutation
+  consequences, add gnomAD allele frequencies, and annotate impact. The resulting
+  VCF is then indexed. This module was part of Brent Pederson's original pipeline.
+  It is not used directly in Lindsay Clark's version, but rather broken into smaller
+  modules including BCFTOOLS_NORM_CSQ, SNPEFF, SLIVAR_GNOTATE, and ZIP_INDEX_PUBLISH.
+authors:
+  - "@brentp"

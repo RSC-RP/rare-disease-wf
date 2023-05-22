@@ -1,0 +1,34 @@
+name: bcftools_annotate_info
+description: |
+    Transfer info fields from one VCF to another. Can be used as an alternative
+    to SNPSIFT_ANNOTATE, especially for adding gnomAD data.
+keywords:
+  - vcf
+tools:
+  - bcftools:
+      description: |
+        Zip, index, and add annotations to a VCF.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+input:
+  - vcf:
+      type: path
+      description: VCF to annotate
+  - anno_vcf:
+      type: path
+      description: Bgzipped VCF containing annotations to transfer.
+  - anno_tbi:
+      type: path
+      description: Index for anno_vcf.
+  - columns:
+      type: value
+      description: Comma-delimited list of INFO columns to transfer.
+output:
+  - outvcf:
+      type: file
+      description: Annotated VCF.
+      pattern: "*.{bcfanno.vcf}"
+authors:
+  - "@lvclark"

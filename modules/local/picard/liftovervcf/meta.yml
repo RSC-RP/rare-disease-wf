@@ -1,0 +1,27 @@
+name: liftover_hg19_to_hg38
+description: Liftover a VCF from hg19 to hg38.
+tools:
+  - LiftoverVcf:
+      description: |
+        Convert coordinates from one reference genome to another.
+      homepage: https://broadinstitute.github.io/picard/
+      documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360036712531-CreateSequenceDictionary-Picard-
+      tool_dev_url: https://github.com/broadinstitute/picard
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: file
+      description: VCF using hg19 coordinates to lift over to hg38.
+  - fasta:
+      type: file
+      description: FASTA reference sequence for the hg38 genome.
+  - dict:
+      type: file
+      description: Picard sequence dictionary for the reference genome.
+output:
+  - outvcf:
+      type: file
+      description: VCF in hg38 coordinates.
+      pattern: "*.{liftover.vcf}"
+authors:
+  - "@lvclark"

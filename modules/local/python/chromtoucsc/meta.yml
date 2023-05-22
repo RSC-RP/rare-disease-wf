@@ -1,0 +1,21 @@
+name: chromnames_to_ucsc
+description: Convert chromosome names in a VCF to UCSC format.
+tools:
+  - chromToUcsc:
+      description: |
+        Change NCBI or Ensembl chromosome names to UCSC names in tabular or wiggle files,
+        using a chromAlias table.
+      homepage: https://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/chromToUcsc
+      documentation: http://genomewiki.ucsc.edu/index.php/Chromosome_name_conversion
+input:
+  - invcf:
+      type: file
+      description: |
+        VCF to convert. params.chromnames should indicate the starting format of g1k, ensembl, or ncbi.
+output:
+  - outvcf:
+      type: file
+      description: Converted VCF.
+      pattern: "*.{UCSC.vcf}"
+authors:
+  - "@lvclark"

@@ -1,0 +1,46 @@
+name: call_variants_trio
+description: |
+  Second step in variant calling on pairs or trios of samples.
+  Processes one sample at a time.  The input is a single tuple out of the three
+  output by make_examples_trio. It can loop over files from regions that were run
+  separately by make_examples_trio (for example sex chromosomes in male probands).
+  Note that params.deepvar_model needs to be set to WES or WGS.
+Tools:
+  - deeptrio:
+      description: |
+        DeepTrio is a deep learning-based trio variant caller built on top of
+        DeepVariant. DeepTrio extends DeepVariant's functionality, allowing it
+        to utilize the power of neural networks to predict genomic variants in
+        trios or duos.
+      homepage: https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md
+      doi: 10.1101/2021.04.05.438434
+      license: ["BSD 3-Clause"]
+input:
+  - me_tfrecord:
+      type: path
+      description: List of make_examples tfrecord files.
+  - role:
+      type: value
+      description: "child" or "parent"
+  - gvcf_tfrecord:
+      type: path
+      description: |
+        List of gvcf tfrecord files. It is not used by this process but is
+        passed through to be used by postprocess_variants.
+  - sample_id:
+      type: value
+      description: Sample ID to be used in VCF header and file names.
+output:
+  - cv_tfrecord:
+      type: path
+      description: List of call_variants tfrecord files.
+      pattern: "call_variants*.tfrecord.gz"
+  - gvcf_tfrecord:
+      type: path
+      description: List of gvcf tfrecord files.
+      pattern: "gvcf*.tfrecord-*-of-*.gz"
+  - sample_id:
+      type: value
+      description: Sample ID to be used in VCF header and file names.
+authors:
+  - "@lvclark"

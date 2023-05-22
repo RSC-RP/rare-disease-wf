@@ -1,0 +1,50 @@
+name: zip_index_publish
+description: |
+  Prepare VCF for output, including sorting and gzipping if necessary, as well as indexing.
+  Publish to output directory.
+keywords:
+  - vcf
+  - index
+  - gzip
+tools:
+  - view:
+      description: Convert VCF from unzipped to gzipped format.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+  - sort:
+      description: Sort variants by genomic coordinates.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+  - index:
+      description: |
+        Creates index for bgzip compressed VCF/BCF files for random access. CSI
+        (coordinate-sorted index) is created by default.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: file
+      description: VCF to publish
+  - labl:
+      type: string
+      description: An identifying string to insert between the base name and file extension.
+  - sortview:
+      type: string
+      description: The string 'sort' if the VCF is not already sorted by coordinate, or 'view' if it is.
+output:
+  - outvcf:
+      type: file
+      description: The gzipped, and optionally sorted, VCF.
+      pattern: "*.{vcf.gz}"
+  - outindex:
+      type: file
+      description: Index for the VCF.
+      pattern: ".{vcf.gz.csi}"
+authors:
+  - "@lvclark"

@@ -1,0 +1,22 @@
+Bootstrap: docker
+From: r-base
+
+%labels
+    Version v0.0.1
+
+%help
+    R packages for running a script to evaluate population structure in a VCF.
+
+%files
+    run_umap.R /
+
+%post
+    apt-get install libcurl4-openssl-dev
+    apt-get install libssl-dev
+    apt-get install libxml2-dev
+    R -e 'install.packages(c("BiocManager", "ggplot2", "umap"))'
+    R -e 'BiocManager::install(c("VariantAnnotation", "pcaMethods", "dittoSeq"))'
+    R -e 'BiocManager::install(c("TxDb.Hsapiens.UCSC.hg19.knownGene", "TxDb.Hsapiens.UCSC.hg38.knownGene"))'
+
+%test
+    R -e 'packageVersion("VariantAnnotation")'

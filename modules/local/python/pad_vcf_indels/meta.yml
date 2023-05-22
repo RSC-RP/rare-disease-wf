@@ -1,0 +1,31 @@
+name: pad_vcf_indels
+description: |
+  Reformat indels to match VCF specifications, shifting them left one base so
+  that there are no empty alleles. Probably redundant with bcftools norm.
+tools:
+  - pyfaidx:
+      description: |
+        Pyfaidx provides an interface for creating and using indices output by
+        samtools faidx for fast random access of DNA subsequences from huge fasta
+        files in a “pythonic” manner.
+      homepage: https://pypi.org/project/pyfaidx/0.7.1/
+      documentation: https://pythonhosted.org/pyfaidx/
+      doi: 10.7287/peerj.preprints.970v1
+input:
+  - invcf:
+      type: file
+      description: VCF to modify.
+  - fasta:
+      type: file
+      description: Reference genome sequence.
+  - fai:
+      type: file
+      description: FAIDX index for reference genome.
+output:
+  - outvcf:
+      type: file
+      description: Modified VCF.
+      pattern: "*.{padded.vcf}"
+authors:
+  - "@lvclark"
+

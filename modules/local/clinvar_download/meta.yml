@@ -1,0 +1,27 @@
+name: clinvar_download
+description: |
+  Download VCF and index of ClinVar variants. These are updated on a monthly bais.
+keywords:
+  - vcf
+  - annotation
+tools:
+  - clinvar
+      description: |
+        ClinVar aggregates information about genomic variation and its
+        relationship to human health.
+      homepage: https://www.ncbi.nlm.nih.gov/clinvar/
+input:
+  - build:
+      type: string
+      description: Either 'hg19' or 'hg38', indicating which build to download.
+output:
+  - vcf:
+      type: file
+      description: VCF listing ClinVar variants.
+      pattern: "clinvar.vcf.gz"
+  - index:
+      type: file
+      description: Tabix index of the VCF.
+      pattern: "clinvar.vcf.gz.tbi"
+authors:
+  - "@lvclark"

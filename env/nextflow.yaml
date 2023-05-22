@@ -1,0 +1,8 @@
+name: nextflow
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - nextflow=22.10.0
+  - nf-core=2.6
+  - graphviz=6.0.1

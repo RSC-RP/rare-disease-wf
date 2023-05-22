@@ -1,0 +1,34 @@
+name: slivar_duodel
+description: |
+  Detect structural deletions in parent-offspring duos, outputting deletion
+  coordinates and evidence supporting the deletion.
+tools:
+  - slivar:
+      description: |
+        slivar is a set of command-line tools that enables rapid querying and
+        filtering of VCF files. It facilitates operations on trios and groups
+        and allows arbitrary expressions using simple javascript.
+      homepage: https://github.com/brentp/slivar
+      doi: 10.1038/s41525-021-00227-3
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: tuple
+      description: |
+        Input VCF and its index.
+  - ped:
+      type: file
+      description: Pedigree file in PED format for indicating families.
+  - selfchain:
+      type: file
+      description: |
+        BED file indicating regions to exclude.
+        See https://github.com/brentp/slivar/wiki/finding-deletions-in-parent-child-duos.
+output:
+  - outbed:
+      type: file
+      description: |
+        BED file listing deletion coordinates, parent, offspring, and deletion evidence.
+      pattern: "*.deletions.{bed}"
+authors:
+  - "@lvclark"

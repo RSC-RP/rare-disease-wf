@@ -1,0 +1,54 @@
+name: pop_struct
+description: |
+  Make a UMAP graph to show population structure of individuals for QC purposes.
+  Only exonic regions are considered, to accomodate mixes of WGS and WES data.
+keywords:
+  - vcf
+  - graphics
+tools:
+  - VariantAnnotation
+  - pcaMethods
+  - umap
+input:
+  - invcf:
+      type: file
+      description: |
+        VCF file containing genotype data. Must be indexed. tbi or csi index should be
+        included with the file in a tuple.
+  - txdb:
+      type: string
+      description: |
+        Name of Bioconductor TxDb package containing exon locations, for example
+        TxDb.Hsapiens.UCSC.hg19.knownGene.
+  - sample_metadata:
+      type: file
+      description: |
+        Tab-delimited text with sample names in the first column matching the VCF
+        column headers. Other columns contain demographic data.
+  - metadata_columns:
+      type: string
+      description: |
+        Comma-delimited list of column names for variables from sample_metadata to
+        plot on UMAP.
+  - seed:
+      type: integer
+      description: Random seed to ensure reproducibility of exon selection and UMAP.
+  - min_call_rate:
+      type: float
+      description: Minimum call rate of variants for use in analysis (recommended 0.95).
+  - n_exons:
+      type: integer
+      description: Number of exons to randomly select for subsetting variants (recommended 5000).
+  - n_pcs:
+      type: integer
+      description: Number of principal components to output and use in UMAP (recommended 50).
+output:
+  - coords:
+      type: file
+      description: Table of principal components and UMAP coordinates for all samples.
+      pattern: "*.{tsv}"
+  - graphs:
+      type: files
+      description: Images of metadata columns projected onto UMAP.
+authors:
+  - "@lvclark"

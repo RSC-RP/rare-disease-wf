@@ -1,0 +1,29 @@
+name: split
+description: Split a VCF by chromosome
+tools:
+  - view:
+      description: |
+        Process a VCF to just output records from particular chromosomes.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+input:
+  - vcf:
+      type: file
+      description: VCF to split
+  - tbi:
+      type: file
+      description: TBI or CSI index of the VCF.
+  - fai:
+      type: file
+      description: FAIDX index of the reference genome.
+output:
+  - vcfs:
+      type: files
+      description: |
+        List of VCFs, one for each chromosome, one for the mitochondrial genome,
+        and one for all scaffolds.  Empty VCFs are not output.
+authors:
+  - "@brentp"
+  - "@lvclark"

@@ -1,0 +1,29 @@
+name: slivar_tsv
+description: Summarize variants from VCF in TSV file.
+tools:
+  - slivar:
+      description: |
+        slivar is a set of command-line tools that enables rapid querying and
+        filtering of VCF files. It facilitates operations on trios and groups
+        and allows arbitrary expressions using simple javascript.
+      homepage: https://github.com/brentp/slivar
+      doi: 10.1038/s41525-021-00227-3
+      licence: ["MIT"]
+input:
+  - vcf_mendelian:
+      type: file
+      description: VCF filtered by Slivar to include mutations following particular segregation patterns.
+  - vcf_comphet:
+      type: file
+      description: VCF filtered by Slivar to include compound heterozygotes.
+  - ped:
+      type: file
+      description: Pedigree file in PED format for indicating families.
+output:
+  - slivar_tsv:
+      type: file
+      description: Tab-delimited text containing information about variants of interest.
+  
+authors:
+  - "@brentp"
+  - "@lvclark"

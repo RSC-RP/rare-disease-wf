@@ -1,0 +1,45 @@
+name: slivar_mendel_filter
+description: |
+  Filter a VCF based on allele frequency and expected patterns of inheritance
+  in order to detect recessive, dominant, and de-novo mutations that may be
+  causative for a genetic disorder.
+tools:
+  - slivar:
+      description: |
+        slivar is a set of command-line tools that enables rapid querying and
+        filtering of VCF files. It facilitates operations on trios and groups
+        and allows arbitrary expressions using simple javascript.
+      homepage: https://github.com/brentp/slivar
+      doi: 10.1038/s41525-021-00227-3
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: file
+      description: Annotated VCF file to filter.
+  - ped:
+      type: file
+      description: Pedigree file in PED format for indicating families.
+  - slivar_zip:
+      type: file
+      description: |
+        Zip file containing gnomAD annotations.
+        See https://github.com/brentp/slivar#gnotation-files.
+  - maf_recessive:
+      type: float
+      description: Maximum minor allele frequency for recessive alleles.
+  - maf_dominant:
+      type: float
+      description: Maximum minor allele frequency for dominant alleles.
+  - maf_denovo:
+      type: float
+      description: Maximum minor allele frequency for de novo mutations.
+  - comphet_nhomalt:
+      type: integer
+      description: Maximum number of homozygotes in gnomAD for complementary heterozygous mutations.
+output:
+  - outvcf:
+      type: file
+      description: Filtered VCF.
+authors:
+  - "@brentp"
+  - "@lvclark"

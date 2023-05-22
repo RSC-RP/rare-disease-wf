@@ -1,0 +1,46 @@
+name: bcftools_norm_csq
+description: Normalize indels and annotate mutation consequences.
+keywords:
+  - vcf
+  - annotation
+tools:
+  - norm:
+      description: |
+        Left-align and normalize indels, check if REF alleles match the reference,
+        split multiallelic sites into multiple rows.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+  - csq:
+      description: |
+        Consequence predictor for variants. The -l option is used in this case to
+        turn off haplotype-aware predictions.
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+input:
+  - invcf:
+      type: file
+      description: VCF file to normalize and annotate.
+  - fasta:
+      type: file
+      description: Reference genome file.
+  - fai:
+      type: file
+      description: FAIDX file indexing the reference genome.
+  - gff:
+      type: file
+      description: GFF file with gene annotations.
+  - chrom_convert:
+      type: file
+      description: Plain text file showing mapping of UCSC chromsomes to Ensembl.
+output:
+  - outvcf:
+      type: file
+      description: Normalized and annotated VCF.
+      pattern: "*.{bcftools.vcf}"
+authors:
+  - "@lvclark"
+  - "@brentp"
