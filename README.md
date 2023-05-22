@@ -27,12 +27,17 @@ BAMs) and pedigree file before running the main workflow.  I have found it to be
 very helpful for identifying sample mixups, incorrect paternity, incorrect sex,
 and Klinefelter syndrome. [TODO: provide code]
 
+Older commits of this repository are available to RSC team members via
+https://childrens-atlassian/bitbucket/projects/RPDEV/repos/rare-disease-wf/browse.
+The full history is not available in the public version since it contains data
+that I do not have permission to distribute.
+
 ## How to use the workflow
 
 Make your own fork on Bitbucket (recommended), or simply clone this repo using
 
 ``` bash
-git clone ssh://git@childrens-atlassian:7999/rpdev/rare-disease-wf.git
+git clone ssh://git@childrens-atlassian:7999/rp/rare-disease-wf.git
 ```
 
 **To run an example dataset:** This workflow comes with tiny example BAMs and a
