@@ -1,0 +1,38 @@
+---
+title: "QC with Somalier"
+author: "Lindsay Clark"
+date: "2023-06-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Installation
+
+If you haven't already, set up a directory to store singularity images that you
+have downloaded.
+
+```{bash, eval = FALSE}
+mkdir -p ~/singularity
+```
+
+Navigate there and download the image for Somalier.
+
+```{bash, eval = FALSE}
+cd ~/singularity
+
+module load singularity
+
+singularity pull docker://brentp/somalier
+```
+
+Now you can give it a quick test to see that you have access to the software.
+
+```{bashm eval = FALSE}
+singularity exec ~/singularity/somalier_latest.sif somalier extract --help
+```
+
+## Extract sites
+
