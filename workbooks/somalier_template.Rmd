@@ -30,8 +30,65 @@ singularity pull docker://brentp/somalier
 
 Now you can give it a quick test to see that you have access to the software.
 
-```{bashm eval = FALSE}
+```{bash eval = FALSE}
 singularity exec ~/singularity/somalier_latest.sif somalier extract --help
+```
+
+## Check reference genome
+
+Somalier needs a VCF file listing what sites it should use. The file should
+match the reference genome for your BAMs or VCF.  Here is how we can check
+a BAM file:
+
+```{bash, eval = FALSE}
+module load SAMtools
+
+export BAMPATH=/gpfs/shared_data/GIAB/OsloUniversityHospital_Exome
+
+samtools view -H $BAMPATH/151002_7001448_0359_AC7F6GANXX_Sample_HG002-EEogPU_v02-KIT-Av5_AGATGTAC_L008.posiSrt.markDup.bam
+```
+
+In the output from `samtools view`, we can see that the chromosome names are
+integers without the "chr" in front of them, and in the `bwa` line there is a
+reference genome listed as `human_g1k_v37_decoy.fasta`.
+If you don't have BAM files and are instead starting from a VCF, you can use
+`zless` if it is gzipped, or `less` if it is not compressed, to similarly
+preview the header to look at chromosome names and reference genome.
+
+If you go to https://github.com/brentp/somalier/releases you can see VCFs to
+download containing sites to use.  I know from the "v37" in our reference genome
+name that we are using hg19/GRCh37.  I'm not sure which one from the page is
+correct so I will download them both and look at them.
+
+```{bash, eval = FALSE}
+mkdir -p ~/somalier
+
+cd ~/somalier
+
+wget https://github.com/brentp/somalier/files/3412453/sites.hg19.vcf.gz
+wget https://github.com/brentp/somalier/files/3412455/sites.GRCh37.vcf.gz
+
+gunzip -c sites.hg19.vcf.gz | grep contig | less
+gunzip -c sites.GRCh37.vcf.gz | grep contig | less
+```
+
+Both actually have the "chr" in front of the chromosome name, so we will have to
+modify one in order to use it. We can change them over with `bcftools annotate`.
+There is a handy repo at https://github.com/dpryan79/ChromosomeMappings with
+files that we can use to translate chromosome names.
+
+```{bash, eval = FALSE}
+wget https://github.com/dpryan79/ChromosomeMappings/raw/master/GRCh37_UCSC2ensembl.txt
+
+head GRCh37_UCSC2ensembl.txt
+
+module load BCFtools
+
+bcftools annotate --rename-chrs GRCh37_UCSC2ensembl.txt \
+-o sites.hg19_ensembl.vcf.gz -O z \
+sites.hg19.vcf.gz
+
+gunzip -c sites.hg19_ensembl.vcf.gz | grep contig | less
 ```
 
 ## Extract sites
