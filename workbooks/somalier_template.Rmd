@@ -9,6 +9,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Overview
+
+We will use Somalier for QC before we run the workflow.  It will help us to
+identify cases where sex and/or relationships are incorrect, so that we can
+correct our pedigree before running genotype calling and trio analysis.
+
+You can read more about Somalier on its GitHub site: https://github.com/brentp/somalier
+
 ## Installation
 
 If you haven't already, set up a directory to store singularity images that you
@@ -93,3 +101,57 @@ gunzip -c sites.hg19_ensembl.vcf.gz | grep contig | less
 
 ## Extract sites
 
+In the `testdata` folder of this repo is a file called "GIAB_full_BAMs.txt"
+listing locations of BAM files for the three Genome in a Bottle samples.
+Copy that list to `~/somalier`.
+
+```{bash, eval = FALSE}
+export REPODIR=/active/taylor_s/people/lclar5/RP/rare-disease-wf
+
+cp $REPODIR/testdata/GIAB_full_BAMs.txt ~/somalier
+```
+
+Now we can extract the sites of interest from our BAMs. Note that by default
+Singularity can only see your home directory, which is why I have to bind
+`/gpfs/shared_data`.
+
+```{bash, eval = FALSE}
+module load singularity
+
+cd ~/somalier
+
+mkdir extracted
+
+while read line
+do
+
+singularity exec --bind /gpfs/shared_data:/mnt \
+~/singularity/somalier_latest.sif \
+somalier extract -d ~/somalier/extracted/ \
+--sites ~/somalier/sites.hg19_ensembl.vcf.gz \
+-f /mnt/references/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh37.dna.primary_assembly.fa \
+/mnt/GIAB/OsloUniversityHospital_Exome/${line}
+
+done <"$HOME/somalier/GIAB_full_BAMs.txt"
+```
+
+Now you can see the output, which is one 209K file for each sample.
+
+```{bash, eval = FALSE}
+ls -lh ~/somalier/extracted
+```
+
+It is not a bad idea to copy these back to your RSS space, since you can reuse
+them if you add or remove samples from your dataset.
+
+```{bash, eval = FALSE}
+mkdir -p $REPODIR/results/somalier_extracted
+
+cp ~/somalier/extracted/* $REPODIR/results/somalier_extracted
+```
+
+## Test sex and relatedness
+
+Although you have probably built a pedigree file already based on the sample
+names that are in your VCF or metadata spreadsheet, you need to make another
+one using the file names that were output by `somalier extract`.
