@@ -1,0 +1,4 @@
+#family_id	sample_id	paternal_id	maternal_id	sex	phenotype	original_pedigree_sex	gt_depth_mean	gt_depth_sd	depth_mean	depth_sd	ab_mean	ab_std	n_hom_ref	n_het	n_hom_alt	n_unknown	p_middling_ab	X_depth_mean	X_n	X_hom_ref	X_het	X_hom_alt	Y_depth_mean	Y_n
+Ashkenazim	Sample_Diag-excap51-HG002-EEogPU	Sample_Diag-excap51-HG003-EEogPU	Sample_Diag-excap51-HG004-EEogPU	1	2	male	143.2	89.9	142.5	90.3	0.53	0.39	4534	6931	5549	370	0.004	80.82	338	162	2	174	85.92	12
+Ashkenazim	Sample_Diag-excap51-HG003-EEogPU	-9	-9	1	1	male	122.8	76.9	122.2	77.2	0.53	0.39	4562	6902	5498	422	0.004	70.73	335	141	2	192	70.08	12
+Ashkenazim	Sample_Diag-excap51-HG004-EEogPU	-9	-9	2	1	female	132.9	82.5	132.2	82.8	0.53	0.39	4536	6862	5556	430	0.003	142.80	347	115	113	119	0.00	0
