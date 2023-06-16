@@ -25,7 +25,8 @@ Although I have not integrated it into this workflow, I recommend running
 Somalier (https://github.com/brentp/somalier) on the VCF (or, if available,
 BAMs) and pedigree file before running the main workflow.  I have found it to be
 very helpful for identifying sample mixups, incorrect paternity, incorrect sex,
-and Klinefelter syndrome. [TODO: provide code]
+and Klinefelter syndrome. See `workbooks/somalier_template.Rmd` for example
+code.
 
 Older commits of this repository are available to RSC team members via
 https://childrens-atlassian/bitbucket/projects/RPDEV/repos/rare-disease-wf/browse.

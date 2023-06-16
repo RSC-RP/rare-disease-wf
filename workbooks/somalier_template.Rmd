@@ -1,0 +1,323 @@
+---
+title: "QC with Somalier"
+author: "Lindsay Clark"
+date: "2023-06-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+We will use Somalier for QC before we run the workflow.  It will help us to
+identify cases where sex and/or relationships are incorrect, so that we can
+correct our pedigree before running genotype calling and trio analysis.
+
+You can read more about Somalier on its GitHub site: https://github.com/brentp/somalier
+
+## Installation
+
+If you haven't already, set up a directory to store singularity images that you
+have downloaded.
+
+```{bash, eval = FALSE}
+mkdir -p ~/singularity
+```
+
+Navigate there and download the image for Somalier.
+
+```{bash, eval = FALSE}
+cd ~/singularity
+
+module load singularity
+
+singularity pull docker://brentp/somalier
+```
+
+Now you can give it a quick test to see that you have access to the software.
+
+```{bash eval = FALSE}
+singularity exec ~/singularity/somalier_latest.sif somalier extract --help
+```
+
+## Check reference genome
+
+Somalier needs a VCF file listing what sites it should use. The file should
+match the reference genome for your BAMs or VCF.  Here is how we can check
+a BAM file:
+
+```{bash, eval = FALSE}
+module load SAMtools
+
+export BAMPATH=/gpfs/shared_data/GIAB/OsloUniversityHospital_Exome
+
+samtools view -H $BAMPATH/151002_7001448_0359_AC7F6GANXX_Sample_HG002-EEogPU_v02-KIT-Av5_AGATGTAC_L008.posiSrt.markDup.bam
+```
+
+In the output from `samtools view`, we can see that the chromosome names are
+integers without the "chr" in front of them, and in the `bwa` line there is a
+reference genome listed as `human_g1k_v37_decoy.fasta`.
+If you don't have BAM files and are instead starting from a VCF, you can use
+`zless` if it is gzipped, or `less` if it is not compressed, to similarly
+preview the header to look at chromosome names and reference genome.
+
+If you go to https://github.com/brentp/somalier/releases you can see VCFs to
+download containing sites to use.  I know from the "v37" in our reference genome
+name that we are using hg19/GRCh37.  I'm not sure which one from the page is
+correct so I will download them both and look at them.
+
+```{bash, eval = FALSE}
+mkdir -p ~/somalier
+
+cd ~/somalier
+
+wget https://github.com/brentp/somalier/files/3412453/sites.hg19.vcf.gz
+wget https://github.com/brentp/somalier/files/3412455/sites.GRCh37.vcf.gz
+
+gunzip -c sites.hg19.vcf.gz | grep contig | less
+gunzip -c sites.GRCh37.vcf.gz | grep contig | less
+```
+
+Both actually have the "chr" in front of the chromosome name, so we will have to
+modify one in order to use it. We can change them over with `bcftools annotate`.
+There is a handy repo at https://github.com/dpryan79/ChromosomeMappings with
+files that we can use to translate chromosome names.
+
+```{bash, eval = FALSE}
+wget https://github.com/dpryan79/ChromosomeMappings/raw/master/GRCh37_UCSC2ensembl.txt
+
+head GRCh37_UCSC2ensembl.txt
+
+module load BCFtools
+
+bcftools annotate --rename-chrs GRCh37_UCSC2ensembl.txt \
+-o sites.hg19_ensembl.vcf.gz -O z \
+sites.hg19.vcf.gz
+
+gunzip -c sites.hg19_ensembl.vcf.gz | grep contig | less
+```
+
+## Extract sites
+
+In the `testdata` folder of this repo is a file called "GIAB_full_BAMs.txt"
+listing locations of BAM files for the three Genome in a Bottle samples.
+Copy that list to `~/somalier`.
+
+```{bash, eval = FALSE}
+export REPODIR=/active/taylor_s/people/lclar5/RP/rare-disease-wf
+
+cp $REPODIR/testdata/GIAB_full_BAMs.txt ~/somalier
+```
+
+Now we can extract the sites of interest from our BAMs. Note that by default
+Singularity can only see your home directory, which is why I have to bind
+`/gpfs/shared_data`.
+
+```{bash, eval = FALSE}
+module load singularity
+
+cd ~/somalier
+
+mkdir extracted
+
+while read line
+do
+
+singularity exec --bind /gpfs/shared_data:/mnt \
+~/singularity/somalier_latest.sif \
+somalier extract -d ~/somalier/extracted/ \
+--sites ~/somalier/sites.hg19_ensembl.vcf.gz \
+-f /mnt/references/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh37.dna.primary_assembly.fa \
+/mnt/GIAB/OsloUniversityHospital_Exome/${line}
+
+done <"$HOME/somalier/GIAB_full_BAMs.txt"
+```
+
+Now you can see the output, which is one 209K file for each sample.
+
+```{bash, eval = FALSE}
+ls -lh ~/somalier/extracted
+```
+
+It is not a bad idea to copy these back to your RSS space, since you can reuse
+them if you add or remove samples from your dataset.
+
+```{bash, eval = FALSE}
+mkdir -p $REPODIR/results/somalier_extracted
+
+cp ~/somalier/extracted/* $REPODIR/results/somalier_extracted
+```
+
+## Test sex and relatedness
+
+Although you have probably built a pedigree file already based on the sample
+names that are in your VCF or metadata spreadsheet, you need to make another
+one using the file names that were output by `somalier extract`. For this example
+I have made one available in `testdata/GIAB_pedigree_somalier.txt`. Then we can
+run `somalier relate`.  It's pretty quick and the files are pretty small, so I
+am just going to bind my RSS directory. For the output files, I am using "GIAB"
+in the prefix so I know what project this came from, and "1" in case I decide to
+do another run after fixing the pedigree.
+
+```{bash, eval = FALSE}
+mkdir -p $REPODIR/results/somalier_out
+
+singularity exec --bind $REPODIR:/mnt \
+~/singularity/somalier_latest.sif somalier relate \
+--ped /mnt/testdata/GIAB_pedigree_somalier.txt \
+-o /mnt/results/somalier_out/GIAB_somalier_1 \
+/mnt/results/somalier_extracted/*.somalier
+```
+
+Now in `results/somalier_out` you should have the files:
+
+* GIAB_somalier_1.groups.tsv
+* GIAB_somalier_1.html
+* GIAB_somalier_1.pairs.tsv
+* GIAB_somalier_1.samples.tsv
+
+You can open the HTML file in your web browser to see some useful plots showing
+relatedness and sex. You can pick out potential mistakes in the pedigree by
+finding points whose color doesn't match the cluster they are in (none in the
+GIAB example).
+
+## Examining the results in R
+
+When I do have some inconsistencies, or so many samples that I can't see them
+all in the HTML file, I like to take a deeper dive in R.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+Let's import the output files and the pedigree.
+
+```{r}
+ped <- read.table("../testdata/GIAB_pedigree_somalier.txt",
+                  sep = "\t")
+
+som_samples <- read.table("../results/somalier_out/GIAB_somalier_1.samples.tsv",
+                          comment.char = "", header = TRUE)
+
+som_pairs <- read.table("../results/somalier_out/GIAB_somalier_1.pairs.tsv",
+                          comment.char = "", header = TRUE)
+
+som_groups <- read.table("../results/somalier_out/GIAB_somalier_1.groups.tsv")
+som_groups$ind1 <- sub(",.*", "", som_groups$V1)
+som_groups$ind2 <- sub(".*,", "", som_groups$V1)
+colnames(som_groups)[2] <- "relatedness"
+```
+
+### Sex
+
+The file ending in ".samples.tsv" has useful statistics for determining sex.
+
+Males have reads on the Y chromosome but females don't.  Females are heterozygous
+on the X chromosome but males are homozygous.
+
+```{r}
+som_samples <- som_samples %>%
+    mutate(X_het_ratio = X_het / (X_hom_ref + X_het + X_hom_alt))
+
+ggplot(som_samples, aes(x = X_het_ratio,
+                        y = Y_depth_mean / X_depth_mean,
+                        color = original_pedigree_sex)) +
+    geom_point()
+```
+
+```{r}
+ggplot(som_samples, aes(y = Y_depth_mean / X_depth_mean,
+                        x = as.factor(original_pedigree_sex))) +
+    geom_boxplot() + geom_point()
+```
+
+```{r}
+ggplot(som_samples, aes(y = X_het_ratio,
+                        x = as.factor(original_pedigree_sex))) +
+    geom_boxplot() + geom_point()
+```
+
+There are no inconsistencies in the GIAB example dataset, but here is some
+example code to find problems when the do exist.
+
+Male individuals incorrectly labeled as female:
+
+```{r}
+som_samples %>%
+    filter(original_pedigree_sex == "female",
+           Y_depth_mean > 0,
+           X_het_ratio < 0.05)
+```
+
+Female individuals incorrectly labeled as male:
+
+```{r}
+som_samples %>%
+    filter(original_pedigree_sex == "male",
+           Y_depth_mean < 0.01 * depth_mean,
+           X_het_ratio > 0.2)
+```
+
+Individuals with Klinefelter syndrome (XXY). I would just list sex as missing in
+the pedigree for these.  If these individuals have consented to receive
+incidental findings, they should be notified.
+
+```{r}
+som_samples %>%
+    filter(X_het_ratio > 0.1,
+           Y_depth_mean > 0.35 * X_depth_mean,
+           Y_depth_mean < 0.65 * X_depth_mean)
+```
+
+### Relatedness
+
+In the GIAB example dataset, there are no errors in the relationships; both
+parents are 50% related to the child.  Here is how we would visualize relatedness
+in larger datasets.
+
+Do individuals that should be related seem related?
+
+```{r}
+som_pairs %>%
+    filter(expected_relatedness > 0) %>%
+    ggplot(aes(x = expected_relatedness, y = relatedness)) +
+    geom_point()
+```
+
+Are there any unexpected relationships?
+
+```{r}
+ggplot(som_pairs, aes(x = expected_relatedness != -1,
+                      y = relatedness)) +
+    geom_boxplot() +
+    xlab("Related in pedigree") +
+    ylab("Relatedness from genotypes")
+```
+
+List pairs that seem unrelated despite being related in the pedigree, e.g.
+incorrect paternity.
+
+```{r}
+som_pairs %>%
+    filter(expected_relatedness > 0,
+           relatedness < 0.1)
+```
+
+Find duplicate samples or identical twins.
+
+```{r}
+som_pairs %>%
+    filter(relatedness > 0.8)
+```
+
+Find unexpected cousin relationships.
+
+```{r}
+som_pairs %>%
+    filter(expected_relatedness == -1,
+           relatedness > 0.05,
+           relatedness < 0.6)
+```

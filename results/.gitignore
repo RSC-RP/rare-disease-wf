@@ -1,2 +1,4 @@
-*
+/*
 !.gitignore
+!somalier_out/
+*.html

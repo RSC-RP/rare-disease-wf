@@ -1,0 +1,4 @@
+#sample_a	sample_b	relatedness	ibs0	ibs2	hom_concordance	hets_a	hets_b	hets_ab	shared_hets	hom_alts_a	hom_alts_b	shared_hom_alts	n	x_ibs0	x_ibs2	expected_relatedness
+Sample_Diag-excap51-HG002-EEogPU	Sample_Diag-excap51-HG003-EEogPU	0.513	1	10064	0.672	6931	6902	13621	3493	5549	5498	3696	16700	113	208	0.5
+Sample_Diag-excap51-HG002-EEogPU	Sample_Diag-excap51-HG004-EEogPU	0.510	1	10043	0.668	6931	6862	13545	3454	5549	5556	3706	16681	0	226	0.5
+Sample_Diag-excap51-HG003-EEogPU	Sample_Diag-excap51-HG004-EEogPU	0.033	1321	7532	0.005	6902	6862	13506	2863	5498	5556	2672	16633	56	163	-1.0
