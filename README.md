@@ -81,13 +81,13 @@ Set up the conda environment for Nextflow:
 ``` bash
 cd rare-disease-wf
 
-conda env create -f env/nextflow.yaml
+mamba env create -f env/nextflow.yaml
 ```
 
 Load the conda environment.
 
 ``` bash
-conda activate nextflow
+mamba activate nextflow
 ```
 
 The first time you run the workflow, you will need to load singularity in order to download the container images.
