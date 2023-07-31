@@ -19,27 +19,27 @@ You can read more about Somalier on its GitHub site: https://github.com/brentp/s
 
 ## Installation
 
-If you haven't already, set up a directory to store singularity images that you
+If you haven't already, set up a directory to store apptainer images that you
 have downloaded.
 
 ```{bash, eval = FALSE}
-mkdir -p ~/singularity
+mkdir -p ~/apptainer
 ```
 
 Navigate there and download the image for Somalier.
 
 ```{bash, eval = FALSE}
-cd ~/singularity
+cd ~/apptainer
 
-module load singularity
+module load apptainer
 
-singularity pull docker://brentp/somalier
+apptainer pull docker://brentp/somalier
 ```
 
 Now you can give it a quick test to see that you have access to the software.
 
 ```{bash eval = FALSE}
-singularity exec ~/singularity/somalier_latest.sif somalier extract --help
+apptainer exec ~/apptainer/somalier_latest.sif somalier extract --help
 ```
 
 ## Check reference genome
@@ -112,11 +112,11 @@ cp $REPODIR/testdata/GIAB_full_BAMs.txt ~/somalier
 ```
 
 Now we can extract the sites of interest from our BAMs. Note that by default
-Singularity can only see your home directory, which is why I have to bind
+Apptainer can only see your home directory, which is why I have to bind
 `/gpfs/shared_data`.
 
 ```{bash, eval = FALSE}
-module load singularity
+module load apptainer
 
 cd ~/somalier
 
@@ -125,8 +125,8 @@ mkdir extracted
 while read line
 do
 
-singularity exec --bind /gpfs/shared_data:/mnt \
-~/singularity/somalier_latest.sif \
+apptainer exec --bind /gpfs/shared_data:/mnt \
+~/apptainer/somalier_latest.sif \
 somalier extract -d ~/somalier/extracted/ \
 --sites ~/somalier/sites.hg19_ensembl.vcf.gz \
 -f /mnt/references/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh37.dna.primary_assembly.fa \
@@ -164,8 +164,8 @@ do another run after fixing the pedigree.
 ```{bash, eval = FALSE}
 mkdir -p $REPODIR/results/somalier_out
 
-singularity exec --bind $REPODIR:/mnt \
-~/singularity/somalier_latest.sif somalier relate \
+apptainer exec --bind $REPODIR:/mnt \
+~/apptainer/somalier_latest.sif somalier relate \
 --ped /mnt/testdata/GIAB_pedigree_somalier.txt \
 -o /mnt/results/somalier_out/GIAB_somalier_1 \
 /mnt/results/somalier_extracted/*.somalier
