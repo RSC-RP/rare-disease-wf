@@ -81,26 +81,26 @@ Set up the conda environment for Nextflow:
 ``` bash
 cd rare-disease-wf
 
-conda env create -f env/nextflow.yaml
+mamba env create -f env/nextflow.yaml
 ```
 
 Load the conda environment.
 
 ``` bash
-conda activate nextflow
+mamba activate nextflow
 ```
 
-The first time you run the workflow, you will need to load singularity in order to download the container images.
+The first time you run the workflow, you will need to load [apptainer](https://apptainer.org/docs/user/latest/) (previously called "singularity") in order to download the container images.
 
 ``` bash
-module load singularity
+module load apptainer
 ```
 
-You should also copy over the custom singularity images for this workflow before running the workflow for the first time:
+You should also copy over the custom apptainer images for this workflow before running the workflow for the first time:
 
 ``` bash
-mkdir -p ~/singularity
-cp /gpfs/shared_data/singularity/rare-disease-wf/* ~/singularity/
+mkdir -p ~/apptainer
+cp /gpfs/shared_data/singularity/rare-disease-wf/* ~/apptainer/
 ```
 
 This is how you would run variant calling on trios and duos:
@@ -110,7 +110,7 @@ nextflow \
     -c nextflow.config \
     run main.nf \
     -entry calltrios \
-    -profile PBS_singularity \
+    -profile PBS_apptainer \
     -resume
 ```
 
@@ -120,7 +120,7 @@ And this is how you would run trio analysis:
 nextflow \
     -c nextflow.config \
     run main.nf \
-    -profile PBS_singularity \
+    -profile PBS_apptainer \
     -resume
 ```
 
