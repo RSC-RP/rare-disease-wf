@@ -90,7 +90,7 @@ Load the conda environment.
 mamba activate nextflow
 ```
 
-The first time you run the workflow, you will need to load apptainer (previously called "singularity") in order to download the container images.
+The first time you run the workflow, you will need to load [apptainer](https://apptainer.org/docs/user/latest/) (previously called "singularity") in order to download the container images.
 
 ``` bash
 module load apptainer
