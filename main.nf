@@ -136,7 +136,7 @@ workflow merge_vcfs {
     main:
         CHROMNAMES(fai_ensembl)
         FILEORDER(vcf_ch_sp, CHROMNAMES.out)
-        BCFTOOLS_CONCAT(vcf_ch_sp, FILEORDER.out)
+        BCFTOOLS_CONCAT(vcf_ch_sp, FILEORDER.out, file(params.vcf).simpleName)
             .set{ vcf_ch }
 }
 
