@@ -6,6 +6,9 @@ Files from the original workflow can be found in the `OLD` folder.
 Special thanks also to https://github.com/dpryan79/ChromosomeMappings for
 chromsome name conversion keys.
 
+See https://nf-co.re/raredisease/1.1.1 for another workflow that may be of interest,
+in particular if you would like to look at structural or mitochondrial variants.
+
 For the main workflow,
 a VCF from WGS and/or WES is required, along with a pedigree file indicating
 relationships between probands and parents or other relatives.  Functional
