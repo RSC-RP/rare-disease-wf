@@ -92,7 +92,7 @@ mamba env create -f env/nextflow.yaml
 Load the conda environment.
 
 ``` bash
-mamba activate nextflow
+mamba activate nextflow_raredisease
 ```
 
 The first time you run the workflow, you will need to load [apptainer](https://apptainer.org/docs/user/latest/) (previously called "singularity") in order to download the container images.
