@@ -1,6 +1,7 @@
 process SLIVAR_TSV {
     container 'docker://brentp/rare-disease:v0.2.2'
     publishDir "$params.outdir", mode: 'copy', overwrite: true
+    label 'process_single'
 
     input:
     path(vcf_mendelian)

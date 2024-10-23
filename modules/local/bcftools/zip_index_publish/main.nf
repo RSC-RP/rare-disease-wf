@@ -2,6 +2,7 @@ process ZIP_INDEX_PUBLISH {
     container = "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
     shell = ['/bin/bash', '-euo', 'pipefail']
     publishDir "$params.outdir", mode: 'copy', overwrite: true
+    label 'process_single'
 
     input:
         path(invcf)
