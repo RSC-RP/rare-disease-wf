@@ -95,12 +95,6 @@ Load the conda environment.
 mamba activate nextflow_raredisease
 ```
 
-The first time you run the workflow, you will need to load [apptainer](https://apptainer.org/docs/user/latest/) (previously called "singularity") in order to download the container images.
-
-``` bash
-module load apptainer
-```
-
 You should also copy over the custom apptainer images for this workflow before running the workflow for the first time
 (replacing "mylab" with your association):
 
