@@ -1,4 +1,6 @@
 process CLINVAR_DOWNLOAD {
+    label 'process_single'
+    
     input:
     val(build)
 

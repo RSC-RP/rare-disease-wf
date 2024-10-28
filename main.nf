@@ -136,7 +136,7 @@ workflow merge_vcfs {
     main:
         CHROMNAMES(fai_ensembl)
         FILEORDER(vcf_ch_sp, CHROMNAMES.out)
-        BCFTOOLS_CONCAT(vcf_ch_sp, FILEORDER.out)
+        BCFTOOLS_CONCAT(vcf_ch_sp, FILEORDER.out, file(params.vcf).simpleName)
             .set{ vcf_ch }
 }
 
@@ -161,14 +161,14 @@ workflow annotate {
         }
         SNPEFF(BCFTOOLS_NORM_CSQ.out.vcf, genome, params.snpEff_dir)
         SLIVAR_GNOTATE(SNPEFF.out.vcf, slivar_zip)
-        Channel.fromPath(file(params.annovar_db), checkIfExists: true)
+        Channel.fromPath(file(params.annovar_db, checkIfExists: true))
             .collect()
             .set{ annovar_db }
         TABLE_ANNOVAR(SLIVAR_GNOTATE.out.vcf, annovar_db, params.annovar_buildver)
         TABLE_ANNOVAR.out.vcf
             .set{ vcf_ch_sp }
         if(params.annovar_buildver == "hg19"){
-            Channel.fromPath(file(params.mvp_tab), checkIfExists: true)
+            Channel.fromPath(file(params.mvp_tab, checkIfExists: true))
                 .collect()
                 .set{ mvp_tab }
             MVP_ANNO(vcf_ch_sp, mvp_tab)

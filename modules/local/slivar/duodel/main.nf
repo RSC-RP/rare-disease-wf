@@ -1,6 +1,7 @@
 process SLIVAR_DUODEL {
     container "https://depot.galaxyproject.org/singularity/slivar:0.2.7--h2eeb373_0"
     publishDir "$params.outdir", mode: 'copy', overwrite: true
+    label 'process_single'
 
     input:
     path(invcf)
