@@ -1,6 +1,7 @@
 // Sort VCF (or other file) names based on chromosome names extracted from a FAIDX.
 process FILEORDER {
     container "https://depot.galaxyproject.org/singularity/python:3.9"
+    label 'process_single'
 
     input: 
     path(files)      // List of files

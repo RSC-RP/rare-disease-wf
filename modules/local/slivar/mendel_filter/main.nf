@@ -1,6 +1,7 @@
 process SLIVAR_MENDEL_FILTER {
     //container "https://depot.galaxyproject.org/singularity/slivar:0.2.7--h2eeb373_0"
     container 'docker://brentp/rare-disease:v0.2.2' // has slivar-functions.js
+    label 'process_single'
     // Don't publish, but run zip_index_publish afterwards
 
     input:

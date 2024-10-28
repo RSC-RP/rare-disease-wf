@@ -1,5 +1,6 @@
 process SLIVAR_GNOTATE {
     container "https://depot.galaxyproject.org/singularity/slivar:0.2.7--h2eeb373_0"
+    label 'process_single'
 
     input:
     path(invcf)

@@ -1,6 +1,7 @@
 process POP_STRUCT {
     container 'vcf_umap_v0.4.sif'
     publishDir "${params.outdir}/qc", mode: 'copy', overwrite: true
+    label 'process_single'
 
     input:
     tuple path(invcf), path(index)

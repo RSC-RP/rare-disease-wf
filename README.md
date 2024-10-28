@@ -6,7 +6,7 @@ Files from the original workflow can be found in the `OLD` folder.
 Special thanks also to https://github.com/dpryan79/ChromosomeMappings for
 chromsome name conversion keys.
 
-See https://nf-co.re/raredisease/1.1.1 for another workflow that may be of interest,
+See https://nf-co.re/raredisease for another workflow that may be of interest,
 in particular if you would like to look at structural or mitochondrial variants.
 
 For the main workflow,
@@ -41,12 +41,14 @@ that I do not have permission to distribute.
 Make your own fork on Bitbucket (recommended), or simply clone this repo using
 
 ``` bash
-git clone ssh://git@childrens-atlassian:7999/rp/rare-disease-wf.git
+git clone ssh://git@ea-bitbucket-prod.childrens.sea.kids:7999/rp/rare-disease-wf.git
 ```
 
 **To run your own data:** You should open `nextflow.config` and edit it to
 point to your own files. The params that you are likely to need to change are
-closest to the top, starting from `project` and going down to `outdir`.
+closest to the top, starting from `project` and going down to `outdir`. You
+will also need to edit lines 4 and 7 of `sasquatch.config` to point to your own
+association.
 
 * You can use `//` to indicate a comment line in `nextflow.config` if you don't
 want to delete the original parameters.
@@ -60,8 +62,8 @@ to `nextflow.config`, overwriting or commenting out the originals.
 * If your chromosome names start with `chr`, you should set `chromnames = 'ucsc'`.
 You should also set `fasta_bams` to the reference genome that was used for alignment,
 for example
-`/gpfs/shared_data/references/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/hg19.fa` or
-`/gpfs/shared_data/references/Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/hg38.p13.fa`.
+`/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa` or
+`/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa`.
 You can check the file header of your BAMs or VCF to be sure.
 This needs to be done regardless of whether you are running the variant calling
 pipeline or just the trio analysis (variant filtering) pipeline.
@@ -72,8 +74,8 @@ VCF or a BCF.
 
 **To run an example dataset:** This workflow comes with tiny example BAMs and a
 VCF from the Genome in a Bottle (GIAB) Ashkenazim trio. To run the pipeline on
-this dataset, the only thing you have to change in `nextflow.config` is the
-`project` parameter.
+this dataset, the only things you have to change are the `workDir` and `assoc`
+in `sasquatch.config`.
 
 When you are ready to run the workflow, you may want to start a `screen` or `tmux`
 session so that you can close the window if needed.  Use `qsub` to start an interactive
@@ -90,20 +92,16 @@ mamba env create -f env/nextflow.yaml
 Load the conda environment.
 
 ``` bash
-mamba activate nextflow
+mamba activate nextflow_raredisease
 ```
 
-The first time you run the workflow, you will need to load [apptainer](https://apptainer.org/docs/user/latest/) (previously called "singularity") in order to download the container images.
+You should also copy over the custom apptainer images for this workflow before running the workflow for the first time
+(replacing "mylab" with your association):
 
 ``` bash
-module load apptainer
-```
+mkdir -p /data/hps/assoc/private/mylab/container/rare-disease-wf/
 
-You should also copy over the custom apptainer images for this workflow before running the workflow for the first time:
-
-``` bash
-mkdir -p ~/apptainer
-cp /gpfs/shared_data/singularity/rare-disease-wf/* ~/apptainer/
+cp /data/hps/assoc/public/bioinformatics/container/rare-disease-wf/* /data/hps/assoc/private/mylab/container/rare-disease-wf/
 ```
 
 This is how you would run variant calling on trios and duos:
@@ -113,7 +111,7 @@ nextflow \
     -c nextflow.config \
     run main.nf \
     -entry calltrios \
-    -profile PBS_apptainer \
+    -profile sasquatch \
     -resume
 ```
 
@@ -123,7 +121,7 @@ And this is how you would run trio analysis:
 nextflow \
     -c nextflow.config \
     run main.nf \
-    -profile PBS_apptainer \
+    -profile sasquatch \
     -resume
 ```
 

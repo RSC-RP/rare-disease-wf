@@ -1,5 +1,6 @@
 process TABLE_ANNOVAR {
     container "docker://bioinfochrustrasbourg/annovar"
+    label 'process_single'
 
     input:
     path(invcf)

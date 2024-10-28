@@ -1,6 +1,7 @@
 process INCIDENTAL_FINDINGS {
     container 'incidental_findings.sif'
     publishDir "${params.outdir}/incidental", mode: 'copy', overwrite: true
+    label 'process_single'
 
     input:
     path(invcf)

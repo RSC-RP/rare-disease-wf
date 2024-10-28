@@ -1,6 +1,7 @@
 // Extract chromosome names from a FAIDX
 process CHROMNAMES {
     container "https://depot.galaxyproject.org/singularity/python:3.9"
+    label 'process_single'
 
     input: path(fai)
     
