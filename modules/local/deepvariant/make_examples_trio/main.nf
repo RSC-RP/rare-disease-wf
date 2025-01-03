@@ -1,26 +1,31 @@
 process MAKE_EXAMPLES_TRIO {
+    tag "$meta.proband_id"
     container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
 
     input:
-    tuple val(proband_sex), val(proband_id), val(father_id), val(mother_id), path(bams), path(bais)
+    tuple val(meta), path(bams), path(bais) // meta has proband_sex, proband_id, father_id, mother_id
     path(fasta_bams)
     path(fai_bams)
 
     output:
-    tuple path("make_examples*_child.tfrecord*.gz"), val("child"), path("gvcf*_child.tfrecord*.gz"), val(proband_id), emit: proband_tfrecord
-    tuple path("make_examples*_parent1.tfrecord*.gz"), val("parent"), path("gvcf*_parent1.tfrecord*.gz"), val(father_id), emit: father_tfrecord, optional: true
-    tuple path("make_examples*_parent2.tfrecord*.gz"), val("parent"), path("gvcf*_parent2.tfrecord*.gz"), val(mother_id), emit: mother_tfrecord, optional: true
+    tuple val([id: proband_id, proband_id: proband_id, role: "child"]), path("make_examples*_child.tfrecord*.gz"), path("gvcf*_child.tfrecord*.gz"), emit: proband_tfrecord
+    tuple val([proband_id: proband_id]), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
+    tuple val([id: father_id, proband_id: proband_id, role: "parent"]), path("make_examples*_parent1.tfrecord*.gz"), path("gvcf*_parent1.tfrecord*.gz"), emit: father_tfrecord, optional: true
+    tuple val([id: mother_id, proband_id: proband_id, role: "parent"]), path("make_examples*_parent2.tfrecord*.gz"), path("gvcf*_parent2.tfrecord*.gz"), emit: mother_tfrecord, optional: true
 
     script:
     def args = task.ext.args ?: ''
 
-    is_male = proband_sex == "Male" || proband_sex == "male" || proband_sex == "M"
+    is_male = meta.proband_sex == "Male" || meta.proband_sex == "male" || meta.proband_sex == "M"
     if(!is_male){
-        assert proband_sex == "Female" || proband_sex == "female" || proband_sex == "F"
+        assert meta.proband_sex == "Female" || meta.proband_sex == "female" || meta.proband_sex == "F"
     }
     if(params.test_bams){
-        assert is_male && proband_id == "HG002" && bams[0].size() < 50000000
+        assert is_male && meta.proband_id == "HG002" && bams[0].size() < 50000000
     }
+    def proband_id = meta.proband_id
+    def father_id = meta.father_id
+    def mother_id = meta.mother_id
     if(params.annovar_buildver == "hg19"){
         par1endX = 2734539
         startX = 2734540

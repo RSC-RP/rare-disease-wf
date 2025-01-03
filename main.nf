@@ -306,17 +306,17 @@ workflow calltrios {
         .map{
             row ->
             if(row.father_id == ""){
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
                 ]
             } else if(row.mother_id == ""){
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true)]
                 ]
             } else {
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
                 ]
