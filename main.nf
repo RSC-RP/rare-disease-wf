@@ -327,14 +327,23 @@ workflow calltrios {
     // Variant calling
     MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
     MAKE_EXAMPLES_TRIO.out.proband_tfrecord
+        .map{ [it[0].proband_id, it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_proband_tfrecords }
     MAKE_EXAMPLES_TRIO.out.father_tfrecord
+        .map{ [it[0].proband_id, it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_father_tfrecords }
     MAKE_EXAMPLES_TRIO.out.mother_tfrecord
+        .map{ [it[0].proband_id, it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_mother_tfrecords }
     all_proband_tfrecords
         .concat(all_father_tfrecords, all_mother_tfrecords)
-        .filter{ it[-1] != "" }
+        .filter{ it[0].id != "" }
         .set{ all_me_tfrecords }
     CALL_VARIANTS_TRIO(all_me_tfrecords)
     POSTPROCESS_VARIANTS(CALL_VARIANTS_TRIO.out, fasta_bams, fai_bams)
