@@ -12,13 +12,15 @@ process POSTPROCESS_VARIANTS {
     tuple val(meta), path(out_gvcf), path("${out_gvcf}.tbi")
 
     script:
+    sample_id = meta.id
     out_gvcf = "${sample_id}.gvcf.gz"
     out_vcf = "${sample_id}.vcf.gz"
-    sample_id = meta.id
 
     // Build argument for --nonvariant_site_tfrecord_path and --infile
-    tfr_prefix = cv_tfrecord.collect{ it.simpleName - "call_variants" - "_${sample_id}"}.sort()
+    tfr_prefix = gvcf_tfrecord.collect{ it.simpleName.replaceFirst(~/^gvcf/, "") }.unique( false ).sort() // 1_parent1
     tfr_string = tfr_prefix.join(' ')
+    cv_shards = cv_tfrecord[0].simpleName.replaceFirst(~/.*\-of\-/, "").toInteger()
+    gvcf_shards = gvcf_tfrecord[0].name.replaceFirst(".gz", "").replaceFirst(~/.*\-of\-/, "").toInteger()
 
     """
     mkdir tmp
@@ -28,9 +30,9 @@ process POSTPROCESS_VARIANTS {
     do
         postprocess_variants \
         --ref $fasta_ensembl \
-        --infile "call_variants\${value}_${sample_id}.tfrecord.gz" \
+        --infile "call_variants\${value}_${sample_id}@${cv_shards}.tfrecord.gz" \
         --outfile temp.vcf.gz \
-        --nonvariant_site_tfrecord_path "gvcf\${value}.tfrecord@${params.make_examples_nshards}.gz" \
+        --nonvariant_site_tfrecord_path "gvcf\${value}.tfrecord@${gvcf_shards}.gz" \
         --gvcf_outfile temp.gvcf.gz
 
         if test -f "$out_gvcf"; then
