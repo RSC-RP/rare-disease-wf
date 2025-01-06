@@ -1,18 +1,20 @@
 process POSTPROCESS_VARIANTS {
-    container = "docker://google/deepvariant:deeptrio-1.5.0-gpu"
+    container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
     publishDir "${params.outdir}/gvcfs/", mode: 'copy', overwrite: true
+    tag "$meta.id"
 
     input:
-    tuple path(cv_tfrecord), path(gvcf_tfrecord), val(sample_id)
+    tuple val(meta), path(cv_tfrecord), path(gvcf_tfrecord)
     path(fasta_ensembl)
     path(fai_ensembl)
 
     output:
-    tuple path(out_gvcf), path("${out_gvcf}.tbi")
+    tuple val(meta), path(out_gvcf), path("${out_gvcf}.tbi")
 
     script:
     out_gvcf = "${sample_id}.gvcf.gz"
     out_vcf = "${sample_id}.vcf.gz"
+    sample_id = meta.id
 
     // Build argument for --nonvariant_site_tfrecord_path and --infile
     tfr_prefix = cv_tfrecord.collect{ it.simpleName - "call_variants" - "_${sample_id}"}.sort()

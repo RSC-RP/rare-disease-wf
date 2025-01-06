@@ -348,9 +348,10 @@ workflow calltrios {
     CALL_VARIANTS_TRIO(all_me_tfrecords)
     POSTPROCESS_VARIANTS(CALL_VARIANTS_TRIO.out, fasta_bams, fai_bams)
     POSTPROCESS_VARIANTS.out
+        .map{ [it[1], it[2]] }
         .collect()
         .set{ all_ind_vcfs }
 
     // gl_nexus for joint VCF
-    GLNEXUS(all_ind_vcfs, params.cohort_name)
+    GLNEXUS(all_ind_vcfs, params.cohort_name) 
 }

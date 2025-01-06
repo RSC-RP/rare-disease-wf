@@ -8,10 +8,10 @@ process MAKE_EXAMPLES_TRIO {
     path(fai_bams)
 
     output:
-    tuple val([id: proband_id, proband_id: proband_id, role: "child"]), path("make_examples*_child.tfrecord*.gz"), path("gvcf*_child.tfrecord*.gz"), emit: proband_tfrecord
-    tuple val([proband_id: proband_id]), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
-    tuple val([id: father_id, proband_id: proband_id, role: "parent"]), path("make_examples*_parent1.tfrecord*.gz"), path("gvcf*_parent1.tfrecord*.gz"), emit: father_tfrecord, optional: true
-    tuple val([id: mother_id, proband_id: proband_id, role: "parent"]), path("make_examples*_parent2.tfrecord*.gz"), path("gvcf*_parent2.tfrecord*.gz"), emit: mother_tfrecord, optional: true
+    tuple val(meta2), path("make_examples*_child.tfrecord*.gz"), path("gvcf*_child.tfrecord*.gz"), emit: proband_tfrecord
+    tuple val(meta3), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
+    tuple val(meta4), path("make_examples*_parent1.tfrecord*.gz"), path("gvcf*_parent1.tfrecord*.gz"), emit: father_tfrecord, optional: true
+    tuple val(meta5), path("make_examples*_parent2.tfrecord*.gz"), path("gvcf*_parent2.tfrecord*.gz"), emit: mother_tfrecord, optional: true
 
     script:
     def args = task.ext.args ?: ''
@@ -26,6 +26,10 @@ process MAKE_EXAMPLES_TRIO {
     def proband_id = meta.proband_id
     def father_id = meta.father_id
     def mother_id = meta.mother_id
+    meta2 = [id: proband_id, proband_id: proband_id, role: "child"]
+    meta3 = [proband_id: proband_id]
+    meta4 = [id: father_id, proband_id: proband_id, role: "parent"]
+    meta5 = [id: mother_id, proband_id: proband_id, role: "parent"]
     if(params.annovar_buildver == "hg19"){
         par1endX = 2734539
         startX = 2734540

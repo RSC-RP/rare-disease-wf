@@ -6,10 +6,10 @@ process CALL_VARIANTS_TRIO {
 
     // me_tfrecord is output from make_examples.  role is "child" or "parent".
     input:
-    tuple val(meta) path(me_tfrecord), path(gvcf_tfrecord), path(example_info) // meta has id, proband_id, and role
+    tuple val(meta), path(me_tfrecord), path(gvcf_tfrecord), path(example_info) // meta has id, proband_id, and role
 
     output:
-    tuple path("call_variants*.tfrecord.gz"), path(gvcf_tfrecord), val(sample_id)
+    tuple val(meta), path("call_variants*.tfrecord.gz"), path(gvcf_tfrecord)
 
     script:
 
