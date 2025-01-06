@@ -314,12 +314,12 @@ workflow calltrios {
                 ]
             }
         .transpose()
-        .filter{ it[1].id != "" }
+        .filter{ it[1].id != "" & it[2].exists() }
         .set{bam_ch}
 
     bam_ch.view()
 
-    // Get BAMS back into proband-mother-father order
+    // Get BAMS back into proband-father-mother order
     bam_ch
         .map{ [ it[0], it[1].plus([bam: it[2], index: it[3]])] }
         .groupTuple(sort: { it.ord } )
