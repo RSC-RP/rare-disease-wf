@@ -1,16 +1,20 @@
 process CALL_VARIANTS_TRIO {
-    container = "docker://google/deepvariant:deeptrio-1.5.0-gpu"
+    container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
     maxRetries 2
     maxForks 2 // avoid running out of GPU scratch space
+    tag "$meta.id"
 
     // me_tfrecord is output from make_examples.  role is "child" or "parent".
     input:
-    tuple path(me_tfrecord), val(role), path(gvcf_tfrecord), val(sample_id)
+    tuple val(meta), path(me_tfrecord), path(gvcf_tfrecord), path(example_info) // meta has id, proband_id, and role
 
     output:
-    tuple path("call_variants*.tfrecord.gz"), path(gvcf_tfrecord), val(sample_id)
+    tuple val(meta), path("call_variants*.tfrecord.gz"), path(gvcf_tfrecord)
 
     script:
+
+    sample_id = meta.id
+    role = meta.role
 
     // Build argument for --examples and --outfile (list of call sets to loop through)
     tfr_first = me_tfrecord.findAll{ it.name ==~ /.*tfrecord-00000-of.*/ }
@@ -21,6 +25,7 @@ process CALL_VARIANTS_TRIO {
     mkdir tmp
     export TMPDIR=tmp
     export TF_GPU_ALLOCATOR=cuda_malloc_async
+    export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib/python3.10/dist-packages/tensorrt_libs
 
     for value in $tfr_string
     do
@@ -28,7 +33,7 @@ process CALL_VARIANTS_TRIO {
         --batch_size 384 \
         --outfile "call_variants\${value}_${sample_id}.tfrecord.gz" \
         --examples "make_examples\${value}*.tfrecord@${params.make_examples_nshards}.gz" \
-        --checkpoint /opt/models/deeptrio/${params.deepvar_model.toLowerCase()}/${role}/model.ckpt
+        --checkpoint /opt/models/deeptrio/${params.deepvar_model.toLowerCase()}/${role}
     done
     """
 

@@ -1,24 +1,35 @@
 process MAKE_EXAMPLES_TRIO {
-    container = "docker://google/deepvariant:deeptrio-1.5.0-gpu"
+    tag "$meta.proband_id"
+    container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
 
     input:
-    tuple val(proband_sex), val(proband_id), val(father_id), val(mother_id), path(bams), path(bais)
+    tuple val(meta), path(bams), path(bais) // meta has proband_sex, proband_id, father_id, mother_id
     path(fasta_bams)
     path(fai_bams)
 
     output:
-    tuple path("make_examples*_child.tfrecord*.gz"), val("child"), path("gvcf*_child.tfrecord*.gz"), val(proband_id), emit: proband_tfrecord
-    tuple path("make_examples*_parent1.tfrecord*.gz"), val("parent"), path("gvcf*_parent1.tfrecord*.gz"), val(father_id), emit: father_tfrecord, optional: true
-    tuple path("make_examples*_parent2.tfrecord*.gz"), val("parent"), path("gvcf*_parent2.tfrecord*.gz"), val(mother_id), emit: mother_tfrecord, optional: true
+    tuple val(meta2), path("make_examples*_child.tfrecord*.gz"), path("gvcf*_child.tfrecord*.gz"), emit: proband_tfrecord
+    tuple val(meta3), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
+    tuple val(meta4), path("make_examples*_parent1.tfrecord*.gz"), path("gvcf*_parent1.tfrecord*.gz"), emit: father_tfrecord, optional: true
+    tuple val(meta5), path("make_examples*_parent2.tfrecord*.gz"), path("gvcf*_parent2.tfrecord*.gz"), emit: mother_tfrecord, optional: true
 
     script:
-    is_male = proband_sex == "Male" || proband_sex == "male" || proband_sex == "M"
+    def args = task.ext.args ?: ''
+
+    is_male = meta.proband_sex == "Male" || meta.proband_sex == "male" || meta.proband_sex == "M"
     if(!is_male){
-        assert proband_sex == "Female" || proband_sex == "female" || proband_sex == "F"
+        assert meta.proband_sex == "Female" || meta.proband_sex == "female" || meta.proband_sex == "F"
     }
     if(params.test_bams){
-        assert is_male && proband_id == "HG002" && bams[0].size() < 50000000
+        assert is_male && meta.proband_id == "HG002" && bams[0].size() < 50000000
     }
+    def proband_id = meta.proband_id
+    def father_id = meta.father_id
+    def mother_id = meta.mother_id
+    meta2 = [id: proband_id, proband_id: proband_id, role: "child"]
+    meta3 = [proband_id: proband_id]
+    meta4 = [id: father_id, proband_id: proband_id, role: "parent"]
+    meta5 = [id: mother_id, proband_id: proband_id, role: "parent"]
     if(params.annovar_buildver == "hg19"){
         par1endX = 2734539
         startX = 2734540
@@ -47,7 +58,7 @@ process MAKE_EXAMPLES_TRIO {
     autosomes = "${pr}1 ${pr}2 ${pr}3 ${pr}4 ${pr}5 ${pr}6 ${pr}7 ${pr}8 ${pr}9 ${pr}10 ${pr}11 ${pr}12 ${pr}13 ${pr}14 ${pr}15 ${pr}16 ${pr}17 ${pr}18 ${pr}19 ${pr}20 ${pr}21 ${pr}22"
 
     // Set up code that will be the same for every run of make_examples
-    mecmd = "time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples --mode calling --ref ${fasta_bams} --channels insert_size --pileup_image_height_child 100 --pileup_image_height_parent 100 --task {} --reads=${bams[0]} --sample_name ${proband_id}"
+    mecmd = "time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples --mode calling --ref ${fasta_bams} --channel_list=read_base,base_quality,mapping_quality,strand,read_supports_variant,base_differs_from_ref,insert_size --pileup_image_height_child 100 --pileup_image_height_parent 100 --task {} --reads=${bams[0]} --sample_name ${proband_id} $args"
     
     // Tiny example region of the genome for demo
     if(params.test_bams)

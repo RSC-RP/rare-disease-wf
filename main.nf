@@ -306,17 +306,17 @@ workflow calltrios {
         .map{
             row ->
             if(row.father_id == ""){
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
                 ]
             } else if(row.mother_id == ""){
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true)]
                 ]
             } else {
-                [ row.proband_sex, row.proband_id, row.father_id, row.mother_id,
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
                   [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
                   [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
                 ]
@@ -327,21 +327,31 @@ workflow calltrios {
     // Variant calling
     MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
     MAKE_EXAMPLES_TRIO.out.proband_tfrecord
+        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_proband_tfrecords }
     MAKE_EXAMPLES_TRIO.out.father_tfrecord
+        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_father_tfrecords }
     MAKE_EXAMPLES_TRIO.out.mother_tfrecord
+        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ all_mother_tfrecords }
     all_proband_tfrecords
         .concat(all_father_tfrecords, all_mother_tfrecords)
-        .filter{ it[-1] != "" }
+        .filter{ it[0].id != "" }
         .set{ all_me_tfrecords }
     CALL_VARIANTS_TRIO(all_me_tfrecords)
     POSTPROCESS_VARIANTS(CALL_VARIANTS_TRIO.out, fasta_bams, fai_bams)
     POSTPROCESS_VARIANTS.out
+        .map{ [it[1], it[2]] }
         .collect()
         .set{ all_ind_vcfs }
 
     // gl_nexus for joint VCF
-    GLNEXUS(all_ind_vcfs, params.cohort_name)
+    GLNEXUS(all_ind_vcfs, params.cohort_name) 
 }
