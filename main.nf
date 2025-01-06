@@ -298,31 +298,35 @@ workflow {
     SLIVAR_TSV(filtervcf.out[0], filtervcf.out[1], ped_ch)
 }
 
-// optional workflow for variant calling on trios
+// optional workflow for variant calling on trios, duos, or singletons
 workflow calltrios {
-    // Read in sample list. Takes duos or trios but not singletons.
+    // Read in sample list
     Channel.fromPath(file(params.sample_bams, checkIfExists: true))
         .splitCsv(header: true, sep: ',')
         .map{
             row ->
-            if(row.father_id == ""){
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
-                ]
-            } else if(row.mother_id == ""){
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true)]
-                ]
-            } else {
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id], // meta for family
+                  [[id: row.proband_id, proband_id: row.proband_id, ord: 0],
+                   [id: row.father_id, proband_id: row.proband_id, ord: 1],
+                   [id: row.mother_id, proband_id: row.proband_id, ord: 2]], // meta for individuals
+                  [file(row.proband_bam), file(row.father_bam), file(row.mother_bam)],
+                  [file(row.proband_index), file(row.father_index), file(row.mother_index)]
                 ]
             }
-        }
+        .transpose()
+        .filter{ it[1].id != "" }
         .set{bam_ch}
+
+    bam_ch.view()
+
+    // Get BAMS back into proband-mother-father order
+    bam_ch
+        .map{ [ it[0], it[1].plus([bam: it[2], index: it[3]])] }
+        .groupTuple(sort: { it.ord } )
+        .map{ [ it[0], it[1].bam, it[1].index ] }
+        .set{bam_ch}
+    
+    bam_ch.view()
     
     // Variant calling
     MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
