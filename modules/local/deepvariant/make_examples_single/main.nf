@@ -21,7 +21,7 @@ process MAKE_EXAMPLES_SINGLE {
         assert meta.proband_sex == "Female" || meta.proband_sex == "female" || meta.proband_sex == "F"
     }
     if(params.test_bams){
-        assert meta.proband_id.startsWith("HG00") && bams[0].size() < 50000000
+        assert meta.proband_id.startsWith("HG00") && bam.size() < 50000000
     }
     def proband_id = meta.proband_id
 
