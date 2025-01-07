@@ -337,7 +337,6 @@ workflow calltrios {
     input_ch.fastq
         .map{ [it[1], it[2]] } // get metadata and fastq
         .set{ fastq_ch }
-    fastq_ch.view() // TEST
     fasta_bams
         .map{ [[id: it.simpleName], it]}
         .collect()
