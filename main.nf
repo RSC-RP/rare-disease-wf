@@ -22,6 +22,8 @@ include { CALL_VARIANTS_TRIO } from './modules/local/deepvariant/call_variants_t
 include { POSTPROCESS_VARIANTS } from './modules/local/deepvariant/postprocess_variants/main'
 include { GLNEXUS } from './modules/local/glnexus/main'
 include { SLIVAR_DUODEL } from './modules/local/slivar/duodel/main'
+include { BWA_MEM } from './modules/nf-core/bwa/mem/main'
+include { SAMTOOLS_INDEX } from './modules/nf-core/samtools/index/main'
 //include { preprocessvcf } from './modules/local/preprocessvcf/main'
 
 // Channel setup for Ensembl references for BcfTools and Slivar
@@ -309,15 +311,72 @@ workflow calltrios {
                   [[id: row.proband_id, proband_id: row.proband_id, ord: 0],
                    [id: row.father_id, proband_id: row.proband_id, ord: 1],
                    [id: row.mother_id, proband_id: row.proband_id, ord: 2]], // meta for individuals
-                  [file(row.proband_bam), file(row.father_bam), file(row.mother_bam)],
-                  [file(row.proband_index), file(row.father_index), file(row.mother_index)]
+                  [row.proband_bam, row.father_bam, row.mother_bam],
+                  [row.proband_index, row.father_index, row.mother_index]
                 ]
             }
         .transpose()
-        .filter{ it[1].id != "" & it[2].exists() }
-        .set{bam_ch}
+        .filter{ it[1].id != "" & it[2] != "" }
+        .map{ [it[0], it[1], file(it[2], checkIfExists: true), it[3]] }
+        .set{ input_ch }
 
-    bam_ch.view()
+    // Get a channel just for looking up metadata again
+    input_ch
+        .map{ [it[1], it[0]] }
+        .set{ meta_lookup }
+
+    // Split off into samples input as bams vs fastqs
+    input_ch
+        .branch{ it ->
+            fastq: it[2].name.endsWith(".fq.gz") | it[2].name.endsWith(".fastq.gz") | it[2].name.endsWith(".fq") | it[2].name.endsWith(".fastq")
+            bam: true // get everything else
+        }
+        .set{ input_ch }
+
+    // Align FASTQ files
+    input_ch.fastq
+        .map{ [it[1], it[2]] } // get metadata and fastq
+        .set{ fastq_ch }
+    fastq_ch.view() // TEST
+    fasta_bams
+        .map{ [[id: it.simpleName], it]}
+        .collect()
+        .set{ fasta_for_bwa }
+    Channel.fromPath(params.bwa_index)
+        .map{ [[id: it.simpleName], it]}
+        .collect()
+        .set{ bwa_index }
+    BWA_MEM(fastq_ch, bwa_index, fasta_for_bwa, true)
+
+    // Combine new aligned bams with any existing bams
+    BWA_MEM.out.bam
+        .join(meta_lookup)
+        .map{ [it[2], it[0], it[1], ""]}
+        .concat(input_ch.bam)
+        .set{ bam_ch }
+    
+    // Index any BAMS with missing index
+    bam_ch
+        .branch{ it ->
+            needs_index: it[3] == ""
+            indexed: true
+        }
+        .set{ bam_ch }
+    bam_ch.needs_index
+        .map{ [it[1], it[2]] }
+        .set{ bams_to_index }
+    SAMTOOLS_INDEX(bams_to_index)
+
+    // Join back in with indexed BAMs
+    bam_ch.indexed
+        .map{ [it[0], it[1], it[2], file(it[3], checkIfExists: true)] }
+        .set{ bams_indexed }
+    bams_to_index
+       .join(SAMTOOLS_INDEX.out.bai)
+       .join(meta_lookup)
+       .map{ [it[3], it[0], it[1], it[2]] }
+       .concat(bams_indexed)
+       .set{ bam_ch }
 
     // Get BAMS back into proband-father-mother order
     bam_ch
@@ -325,8 +384,6 @@ workflow calltrios {
         .groupTuple(sort: { it.ord } )
         .map{ [ it[0], it[1].bam, it[1].index ] }
         .set{bam_ch}
-    
-    bam_ch.view()
     
     // Variant calling
     MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
