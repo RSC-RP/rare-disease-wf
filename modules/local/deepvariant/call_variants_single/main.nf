@@ -1,5 +1,5 @@
-process CALL_VARIANTS_TRIO {
-    container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
+process CALL_VARIANTS_SINGLE {
+    container = "docker://google/deepvariant:1.8.0-gpu"
     maxRetries 2
     maxForks 2 // avoid running out of GPU scratch space
     tag "$meta.id"
@@ -34,7 +34,7 @@ process CALL_VARIANTS_TRIO {
         --batch_size 384 \
         --outfile "call_variants\${value}_${sample_id}.tfrecord.gz" \
         --examples "make_examples\${value}*.tfrecord@${params.make_examples_nshards}.gz" \
-        --checkpoint /opt/models/deeptrio/${params.deepvar_model.toLowerCase()}/${role}
+        --checkpoint /opt/models/${params.deepvar_model.toLowerCase()}
     done
     """
 

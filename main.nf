@@ -19,6 +19,8 @@ include { SLIVAR_TSV } from './modules/local/slivar/tsv/main'
 include { INCIDENTAL_FINDINGS } from './modules/local/R/incidental_findings/main'
 include { MAKE_EXAMPLES_TRIO } from './modules/local/deepvariant/make_examples_trio/main'
 include { CALL_VARIANTS_TRIO } from './modules/local/deepvariant/call_variants_trio/main'
+include { MAKE_EXAMPLES_SINGLE } from './modules/local/deepvariant/make_examples_single/main'
+include { CALL_VARIANTS_SINGLE } from './modules/local/deepvariant/call_variants_single/main'
 include { POSTPROCESS_VARIANTS } from './modules/local/deepvariant/postprocess_variants/main'
 include { GLNEXUS } from './modules/local/glnexus/main'
 include { SLIVAR_DUODEL } from './modules/local/slivar/duodel/main'
@@ -377,15 +379,19 @@ workflow calltrios {
        .concat(bams_indexed)
        .set{ bam_ch }
 
-    // Get BAMS back into proband-father-mother order
+    // Get BAMS back into proband-father-mother order and split families from singletons
     bam_ch
         .map{ [ it[0], it[1].plus([bam: it[2], index: it[3]])] }
         .groupTuple(sort: { it.ord } )
         .map{ [ it[0], it[1].bam, it[1].index ] }
+        .branch{ it ->
+            single: it[0].father_id == "" & it[0].mother_id == ""
+            family: true
+        }
         .set{bam_ch}
     
-    // Variant calling
-    MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
+    // Variant calling on families
+    MAKE_EXAMPLES_TRIO(bam_ch.family, fasta_bams, fai_bams)
     MAKE_EXAMPLES_TRIO.out.proband_tfrecord
         .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
         .join(MAKE_EXAMPLES_TRIO.out.example_info)
@@ -406,7 +412,25 @@ workflow calltrios {
         .filter{ it[0].id != "" }
         .set{ all_me_tfrecords }
     CALL_VARIANTS_TRIO(all_me_tfrecords)
-    POSTPROCESS_VARIANTS(CALL_VARIANTS_TRIO.out, fasta_bams, fai_bams)
+
+    // Variant calling on singletons
+    Channel.fromPath(file(params.par_bed, checkIfExists: true))
+        .collect()
+        .set{ par_bed }
+    MAKE_EXAMPLES_SINGLE(bam_ch.single, fasta_bams, fai_bams, par_bed)
+        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
+        .join(MAKE_EXAMPLES_TRIO.out.example_info)
+        .map{ [it[1], it[2], it[3], it[4]] }
+        .set{ single_tfrecords }
+    CALL_VARIANTS_SINGLE(single_tfrecords)
+
+    // Join together families and singletons
+    CALL_VARIANTS_TRIO.out
+        .concat(CALL_VARIANTS_SINGLE.out)
+        .set{ call_variants_out }
+
+    // Postprocess both together
+    POSTPROCESS_VARIANTS(call_variants_out, fasta_bams, fai_bams)
     POSTPROCESS_VARIANTS.out
         .map{ [it[1], it[2]] }
         .collect()

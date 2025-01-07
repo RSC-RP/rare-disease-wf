@@ -1,6 +1,7 @@
 process MAKE_EXAMPLES_TRIO {
     tag "$meta.proband_id"
     container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
+    label "make_examples"
 
     input:
     tuple val(meta), path(bams), path(bais) // meta has proband_sex, proband_id, father_id, mother_id
