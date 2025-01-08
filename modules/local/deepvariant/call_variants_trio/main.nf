@@ -1,7 +1,5 @@
 process CALL_VARIANTS_TRIO {
     container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
-    maxRetries 2
-    maxForks 2 // avoid running out of GPU scratch space
     tag "$meta.id"
     label "call_variants"
 
