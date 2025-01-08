@@ -1,26 +1,24 @@
-name: call_variants_trio
+name: call_variants_single
 description: |
-  Second step in variant calling on pairs or trios of samples.
+  Second step in variant calling on individual samples.
   Processes one sample at a time.  The input is a single tuple out of the three
-  output by make_examples_trio. It can loop over files from regions that were run
-  separately by make_examples_trio (for example sex chromosomes in male probands).
-  Note that params.deepvar_model needs to be set to WES or WGS.
+  output by make_examples_single. Note that params.deepvar_model needs to be set
+  to WES or WGS.
 Tools:
-  - deeptrio:
+  - deepvariant:
       description: |
-        DeepTrio is a deep learning-based trio variant caller built on top of
-        DeepVariant. DeepTrio extends DeepVariant's functionality, allowing it
-        to utilize the power of neural networks to predict genomic variants in
-        trios or duos.
-      homepage: https://github.com/google/deepvariant/blob/r1.8/docs/deeptrio-details.md
+        DeepVariant is a deep learning-based variant caller that takes aligned
+        reads (in BAM or CRAM format), produces pileup image tensors from them,
+        classifies each tensor using a convolutional neural network, and finally
+        reports the results in a standard VCF or gVCF file.
+      homepage: https://github.com/google/deepvariant
       doi: 10.1101/2021.04.05.438434
       license: ["BSD 3-Clause"]
 input:
   - meta:
       type: map
       description: |
-        Metadata map with "id" giving sample ID, and "role" being set to "child"
-        or "parent".
+        Metadata map with "id" giving sample ID.
   - me_tfrecord:
       type: path
       description: List of make_examples tfrecord files.

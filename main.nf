@@ -19,9 +19,13 @@ include { SLIVAR_TSV } from './modules/local/slivar/tsv/main'
 include { INCIDENTAL_FINDINGS } from './modules/local/R/incidental_findings/main'
 include { MAKE_EXAMPLES_TRIO } from './modules/local/deepvariant/make_examples_trio/main'
 include { CALL_VARIANTS_TRIO } from './modules/local/deepvariant/call_variants_trio/main'
+include { MAKE_EXAMPLES_SINGLE } from './modules/local/deepvariant/make_examples_single/main'
+include { CALL_VARIANTS_SINGLE } from './modules/local/deepvariant/call_variants_single/main'
 include { POSTPROCESS_VARIANTS } from './modules/local/deepvariant/postprocess_variants/main'
 include { GLNEXUS } from './modules/local/glnexus/main'
 include { SLIVAR_DUODEL } from './modules/local/slivar/duodel/main'
+include { BWA_MEM } from './modules/nf-core/bwa/mem/main'
+include { SAMTOOLS_INDEX } from './modules/nf-core/samtools/index/main'
 //include { preprocessvcf } from './modules/local/preprocessvcf/main'
 
 // Channel setup for Ensembl references for BcfTools and Slivar
@@ -298,34 +302,96 @@ workflow {
     SLIVAR_TSV(filtervcf.out[0], filtervcf.out[1], ped_ch)
 }
 
-// optional workflow for variant calling on trios
+// optional workflow for variant calling on trios, duos, or singletons
 workflow calltrios {
-    // Read in sample list. Takes duos or trios but not singletons.
+    // Read in sample list
     Channel.fromPath(file(params.sample_bams, checkIfExists: true))
         .splitCsv(header: true, sep: ',')
         .map{
             row ->
-            if(row.father_id == ""){
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
-                ]
-            } else if(row.mother_id == ""){
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true)]
-                ]
-            } else {
-                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id],
-                  [file(row.proband_bam, checkIfExists: true), file(row.father_bam, checkIfExists: true), file(row.mother_bam, checkIfExists: true)],
-                  [file(row.proband_index, checkIfExists: true), file(row.father_index, checkIfExists: true), file(row.mother_index, checkIfExists: true)]
+                [ [proband_sex: row.proband_sex, proband_id: row.proband_id, father_id: row.father_id, mother_id: row.mother_id], // meta for family
+                  [[id: row.proband_id, proband_id: row.proband_id, ord: 0],
+                   [id: row.father_id, proband_id: row.proband_id, ord: 1],
+                   [id: row.mother_id, proband_id: row.proband_id, ord: 2]], // meta for individuals
+                  [row.proband_bam, row.father_bam, row.mother_bam],
+                  [row.proband_index, row.father_index, row.mother_index]
                 ]
             }
+        .transpose()
+        .filter{ it[1].id != "" & it[2] != "" }
+        .map{ [it[0], it[1], file(it[2], checkIfExists: true), it[3]] }
+        .set{ input_ch }
+
+    // Get a channel just for looking up metadata again
+    input_ch
+        .map{ [it[1], it[0]] }
+        .set{ meta_lookup }
+
+    // Split off into samples input as bams vs fastqs
+    input_ch
+        .branch{ it ->
+            fastq: it[2].name.endsWith(".fq.gz") | it[2].name.endsWith(".fastq.gz") | it[2].name.endsWith(".fq") | it[2].name.endsWith(".fastq")
+            bam: true // get everything else
+        }
+        .set{ input_ch }
+
+    // Align FASTQ files
+    input_ch.fastq
+        .map{ [it[1], it[2]] } // get metadata and fastq
+        .set{ fastq_ch }
+    fasta_bams
+        .map{ [[id: it.simpleName], it]}
+        .collect()
+        .set{ fasta_for_bwa }
+    Channel.fromPath(params.bwa_index)
+        .map{ [[id: it.simpleName], it]}
+        .collect()
+        .set{ bwa_index }
+    BWA_MEM(fastq_ch, bwa_index, fasta_for_bwa, true)
+
+    // Combine new aligned bams with any existing bams
+    BWA_MEM.out.bam
+        .join(meta_lookup)
+        .map{ [it[2], it[0], it[1], ""]}
+        .concat(input_ch.bam)
+        .set{ bam_ch }
+    
+    // Index any BAMS with missing index
+    bam_ch
+        .branch{ it ->
+            needs_index: it[3] == ""
+            indexed: true
+        }
+        .set{ bam_ch }
+    bam_ch.needs_index
+        .map{ [it[1], it[2]] }
+        .set{ bams_to_index }
+    SAMTOOLS_INDEX(bams_to_index)
+
+    // Join back in with indexed BAMs
+    bam_ch.indexed
+        .map{ [it[0], it[1], it[2], file(it[3], checkIfExists: true)] }
+        .set{ bams_indexed }
+    bams_to_index
+       .join(SAMTOOLS_INDEX.out.bai)
+       .join(meta_lookup)
+       .map{ [it[3], it[0], it[1], it[2]] }
+       .concat(bams_indexed)
+       .set{ bam_ch }
+
+    // Get BAMS back into proband-father-mother order and split families from singletons
+    bam_ch
+        .map{ [ it[0], it[1].plus([bam: it[2], index: it[3]])] }
+        .groupTuple(sort: { it.ord } )
+        .map{ [ it[0], it[1].bam, it[1].index ] }
+        .branch{ it ->
+            single: it[0].father_id == "" & it[0].mother_id == ""
+            family: true
         }
         .set{bam_ch}
     
-    // Variant calling
-    MAKE_EXAMPLES_TRIO(bam_ch, fasta_bams, fai_bams)
+    // Variant calling on families
+    MAKE_EXAMPLES_TRIO(bam_ch.family, fasta_bams, fai_bams)
     MAKE_EXAMPLES_TRIO.out.proband_tfrecord
         .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
         .join(MAKE_EXAMPLES_TRIO.out.example_info)
@@ -346,7 +412,24 @@ workflow calltrios {
         .filter{ it[0].id != "" }
         .set{ all_me_tfrecords }
     CALL_VARIANTS_TRIO(all_me_tfrecords)
-    POSTPROCESS_VARIANTS(CALL_VARIANTS_TRIO.out, fasta_bams, fai_bams)
+
+    // Variant calling on singletons
+    Channel.fromPath(file(params.par_bed, checkIfExists: true))
+        .collect()
+        .set{ par_bed }
+    MAKE_EXAMPLES_SINGLE(bam_ch.single, fasta_bams, fai_bams, par_bed)
+    MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
+        .join(MAKE_EXAMPLES_SINGLE.out.example_info)
+        .set{ single_tfrecords }
+    CALL_VARIANTS_SINGLE(single_tfrecords)
+
+    // Join together families and singletons
+    CALL_VARIANTS_TRIO.out
+        .concat(CALL_VARIANTS_SINGLE.out)
+        .set{ call_variants_out }
+
+    // Postprocess both together
+    POSTPROCESS_VARIANTS(call_variants_out, fasta_bams, fai_bams)
     POSTPROCESS_VARIANTS.out
         .map{ [it[1], it[2]] }
         .collect()

@@ -1,5 +1,5 @@
-process CALL_VARIANTS_TRIO {
-    container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
+process CALL_VARIANTS_SINGLE {
+    container = "docker://google/deepvariant:1.8.0-gpu"
     tag "$meta.id"
     label "call_variants"
 
@@ -13,7 +13,6 @@ process CALL_VARIANTS_TRIO {
     script:
 
     sample_id = meta.id
-    role = meta.role
 
     // Build argument for --examples and --outfile (list of call sets to loop through)
     tfr_first = me_tfrecord.findAll{ it.name ==~ /.*tfrecord-00000-of.*/ }
@@ -31,8 +30,8 @@ process CALL_VARIANTS_TRIO {
         call_variants \
         --batch_size 384 \
         --outfile "call_variants\${value}_${sample_id}.tfrecord.gz" \
-        --examples "make_examples\${value}*.tfrecord@${params.make_examples_nshards}.gz" \
-        --checkpoint /opt/models/deeptrio/${params.deepvar_model.toLowerCase()}/${role}
+        --examples "make_examples\${value}.tfrecord@${params.make_examples_nshards}.gz" \
+        --checkpoint /opt/models/${params.deepvar_model.toLowerCase()}
     done
     """
 
