@@ -8,6 +8,26 @@ include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
 
+// subworkflows for different family structures
+// Singletons
+workflow mecv_single {
+    take:
+        bam_ch
+        fasta
+        fai
+        par_bed
+    main:
+        MAKE_EXAMPLES_SINGLE(bam_ch, fasta, fai, par_bed)
+        MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
+            .join(MAKE_EXAMPLES_SINGLE.out.example_info)
+            .set{ single_tfrecords }
+        CALL_VARIANTS_SINGLE(single_tfrecords)
+        CALL_VARIANTS_SINGLE.out
+            .set{ cv_out }
+    emit:
+        cv_out
+}
+
 // optional workflow for variant calling on trios, duos, or singletons
 workflow CALL_TRIOS {
     // Reference sequence for alignment and genotype calling, which may be different from Ensembl.
@@ -141,15 +161,11 @@ workflow CALL_TRIOS {
     Channel.fromPath(file(params.par_bed, checkIfExists: true))
         .collect()
         .set{ par_bed }
-    MAKE_EXAMPLES_SINGLE(bam_ch.single, fasta_bams, fai_bams, par_bed)
-    MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
-        .join(MAKE_EXAMPLES_SINGLE.out.example_info)
-        .set{ single_tfrecords }
-    CALL_VARIANTS_SINGLE(single_tfrecords)
+    mecv_single(bam_ch.single, fasta_bams, fai_bams, par_bed)
 
     // Join together families and singletons
     CALL_VARIANTS_TRIO.out
-        .concat(CALL_VARIANTS_SINGLE.out)
+        .concat(mecv_single.out)
         .set{ call_variants_out }
 
     // Postprocess both together
