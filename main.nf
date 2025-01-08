@@ -419,9 +419,7 @@ workflow calltrios {
         .set{ par_bed }
     MAKE_EXAMPLES_SINGLE(bam_ch.single, fasta_bams, fai_bams, par_bed)
     MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
-        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
         .join(MAKE_EXAMPLES_SINGLE.out.example_info)
-        .map{ [it[1], it[2], it[3], it[4]] }
         .set{ single_tfrecords }
     CALL_VARIANTS_SINGLE(single_tfrecords)
 

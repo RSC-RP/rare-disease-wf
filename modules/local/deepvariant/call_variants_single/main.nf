@@ -31,7 +31,7 @@ process CALL_VARIANTS_SINGLE {
         call_variants \
         --batch_size 384 \
         --outfile "call_variants\${value}_${sample_id}.tfrecord.gz" \
-        --examples "make_examples\${value}*.tfrecord@${params.make_examples_nshards}.gz" \
+        --examples "make_examples\${value}.tfrecord@${params.make_examples_nshards}.gz" \
         --checkpoint /opt/models/${params.deepvar_model.toLowerCase()}
     done
     """

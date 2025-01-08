@@ -10,8 +10,8 @@ process MAKE_EXAMPLES_SINGLE {
     path(par_bed)
 
     output:
-    tuple val(meta), path("make_examples*.tfrecord*.gz"), path("gvcf*.tfrecord*.gz"), emit: proband_tfrecord
-    tuple val(meta), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
+    tuple val(meta2), path("make_examples*.tfrecord*.gz"), path("gvcf*.tfrecord*.gz"), emit: proband_tfrecord
+    tuple val(meta2), path("make_examples*.tfrecord*.example_info.json"), emit: example_info
 
     script:
     def args = task.ext.args ?: ''
@@ -24,6 +24,7 @@ process MAKE_EXAMPLES_SINGLE {
         assert meta.proband_id.startsWith("HG00") && bam.size() < 50000000
     }
     def proband_id = meta.proband_id
+    meta2 = meta + [id: proband_id]
 
     // Chromosome prefix
     if(params.chromnames == "g1k" || params.chromnames == "ensembl"){
