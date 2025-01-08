@@ -13,7 +13,6 @@ process CALL_VARIANTS_SINGLE {
     script:
 
     sample_id = meta.id
-    role = meta.role
 
     // Build argument for --examples and --outfile (list of call sets to loop through)
     tfr_first = me_tfrecord.findAll{ it.name ==~ /.*tfrecord-00000-of.*/ }
