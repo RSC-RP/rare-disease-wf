@@ -12,11 +12,14 @@ include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
 // Singletons
 workflow mecv_single {
     take:
-        bam_ch
+        bam_ch // tuple with meta, bam, and index. Meta has proband_sex, proband_id, mother_id="", father_id=""
         fasta
         fai
         par_bed
     main:
+        bam_ch
+            .map{ [it[0] + [id: it[0].proband_id], it[1], it[2]] }
+            .set{ bam_ch }
         MAKE_EXAMPLES_SINGLE(bam_ch, fasta, fai, par_bed)
         MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
             .join(MAKE_EXAMPLES_SINGLE.out.example_info)
