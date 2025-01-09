@@ -1,63 +1,14 @@
-include { deeptrio } from "../subworkflows/make_examples_call_variants"
-include { deepvariant } from "../subworkflows/make_examples_call_variants"
-include { deepvariant as deepvariant1 } from "../subworkflows/make_examples_call_variants"
+include { mecv_single } from "../subworkflows/family_variant_calling"
+include { mecv_maletrio } from "../subworkflows/family_variant_calling"
+include { mecv_femaletrio_dadduo } from "../subworkflows/family_variant_calling"
+include { mecv_malemomduo } from "../subworkflows/family_variant_calling"
+include { mecv_femalemomduo } from "../subworkflows/family_variant_calling"
+include { mecv_maledadduo } from "../subworkflows/family_variant_calling"
 include { POSTPROCESS_VARIANTS } from '../modules/local/deepvariant/postprocess_variants/main'
 include { GLNEXUS } from '../modules/local/glnexus/main'
 include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
-
-// subworkflows for different family structures
-// Singletons
-workflow mecv_single {
-    take:
-        bam_ch // tuple with meta, bam, and index. Meta has proband_sex, proband_id, mother_id="", father_id=""
-        fasta
-        fai
-        par_bed
-    main:
-        bam_ch
-            .map{ [it[0] + [id: it[0].proband_id], it[1], it[2]] }
-            .set{ bam_ch }
-        deepvariant(bam_ch, fasta, fai, par_bed, false, false)
-        deepvariant.out
-            .set{ cv_out }
-    emit:
-        cv_out
-}
-
-// Male trio; DeepTrio misses father's X chromosome
-workflow mecv_maletrio {
-    take:
-        bam_ch // tuple with meta, bams, and indices. Meta has proband_sex, proband_id, mother_id, father_id
-        fasta
-        fai
-        par_bed
-    main:
-        // family
-        deeptrio(bam_ch, fasta, fai)
-        // just the father
-        bam_ch
-            .map{ [it[0] + [id: it[0].father_id], it[1][1], it[2][1]] }
-            .set{ bam_dad }
-        deepvariant(bam_dad, fasta, fai, par_bed, true, false)
-        deepvariant.out
-           .map{ [[id: it[0].id, proband_id: it[0].proband_id, role: "parent"], it[1], it[2]] }
-           .set { cv_dad }
-        deeptrio.out
-           .join(cv_dad, remainder: true)
-           .map{
-             if(it.size == 5){
-                [it[0], it[1] + it[3], it[2] + it[4]]
-             }
-             else{
-                [it[0], it[1], it[2]]
-             }
-           }
-           .set{ cv_out }
-    emit:
-        cv_out
-}
 
 // workflow for variant calling on trios, duos, or singletons
 workflow CALL_TRIOS {
@@ -96,6 +47,10 @@ workflow CALL_TRIOS {
         .filter{ it[1].id != "" & it[2] != "" }
         .map{ [it[0], it[1], file(it[2], checkIfExists: true), it[3]] }
         .set{ input_ch }
+    
+    // check sex specification
+    input_ch
+        .map{ assert ["Male", "male", "M", "Female", "female", "F"].contains(it[0].proband_sex) }
 
     // Get a channel just for looking up metadata again
     input_ch
@@ -162,6 +117,10 @@ workflow CALL_TRIOS {
         .branch{ it ->
             single: it[0].father_id == "" & it[0].mother_id == ""
             maletrio: ["Male", "male", "M"].contains(it[0].proband_sex) & it[0].father_id != "" & it[0].mother_id != ""
+            femaleWdad: ["Female", "female", "F"].contains(it[0].proband_sex) & it[0].father_id != ""
+            malemomduo: ["Male", "male", "M"].contains(it[0].proband_sex) & it[0].father_id == "" & it[0].mother_id != ""
+            femalemomduo: ["Female", "female", "F"].contains(it[0].proband_sex) & it[0].father_id == "" & it[0].mother_id != ""
+            maledadduo: ["Male", "male", "M"].contains(it[0].proband_sex) & it[0].father_id != "" & it[0].mother_id == ""
         }
         .set{bam_ch}
     
@@ -170,12 +129,20 @@ workflow CALL_TRIOS {
         .collect()
         .set{ par_bed }
     mecv_maletrio(bam_ch.maletrio, fasta_bams, fai_bams, par_bed)
+    mecv_femaletrio_dadduo(bam_ch.femaleWdad, fasta_bams, fai_bams, par_bed)
+    mecv_malemomduo(bam_ch.malemomduo, fasta_bams, fai_bams, par_bed)
+    mecv_femalemomduo(bam_ch.femalemomduo, fasta_bams, fai_bams, par_bed)
+    mecv_maledadduo(bam_ch.maledadduo, fasta_bams, fai_bams, par_bed)
     // Variant calling on singletons
     mecv_single(bam_ch.single, fasta_bams, fai_bams, par_bed)
 
     // Join together families and singletons
     mecv_single.out
-        .concat(mecv_maletrio.out)
+        .concat(mecv_maletrio.out,
+                mecv_femaletrio_dadduo.out,
+                mecv_malemomduo.out,
+                mecv_femalemomduo.out,
+                mecv_maledadduo.out)
         .set{ call_variants_out }
 
     // Postprocess both together
