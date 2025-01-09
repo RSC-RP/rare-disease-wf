@@ -59,7 +59,11 @@ process MAKE_EXAMPLES_TRIO {
     autosomes = "${pr}1 ${pr}2 ${pr}3 ${pr}4 ${pr}5 ${pr}6 ${pr}7 ${pr}8 ${pr}9 ${pr}10 ${pr}11 ${pr}12 ${pr}13 ${pr}14 ${pr}15 ${pr}16 ${pr}17 ${pr}18 ${pr}19 ${pr}20 ${pr}21 ${pr}22"
 
     // Set up code that will be the same for every run of make_examples
-    mecmd = "time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples --mode calling --ref ${fasta_bams} --channel_list=read_base,base_quality,mapping_quality,strand,read_supports_variant,base_differs_from_ref,insert_size --pileup_image_height_child 100 --pileup_image_height_parent 100 --task {} --reads=${bams[0]} --sample_name ${proband_id} $args"
+    mecmd = ["time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples",
+             "--mode calling --ref ${fasta_bams}",
+             "--channel_list=read_base,base_quality,mapping_quality,strand,read_supports_variant,base_differs_from_ref,insert_size",
+             "--pileup_image_height_child 100 --pileup_image_height_parent 100 --task {}",
+             "--reads=${bams[0]} --sample_name ${proband_id} $args"].join(' ').trim()
     
     // Tiny example region of the genome for demo
     if(params.test_bams)
