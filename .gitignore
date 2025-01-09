@@ -3,3 +3,4 @@ log/
 logs/
 *.code-workspace
 .Rproj.user
+.swp

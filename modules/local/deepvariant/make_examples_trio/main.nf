@@ -97,7 +97,7 @@ process MAKE_EXAMPLES_TRIO {
     """
 
     // Full genome, with sex chromosome handled based on proband sex and trio/duo status
-    else if(is_male && father_id != "" && mother_id != "")
+    else if(is_male && father_id != "" && mother_id != "") // male, both parents
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -146,7 +146,7 @@ process MAKE_EXAMPLES_TRIO {
     rm make_examples4_parent2.tfrecord*.gz
     """
 
-    else if(!is_male && father_id != "" && mother_id != "")
+    else if(!is_male && father_id != "" && mother_id != "") // female, both parents
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -161,7 +161,7 @@ process MAKE_EXAMPLES_TRIO {
     --regions "${autosomes} ${pr}X"
     """
 
-    else if(father_id == "" && mother_id != "")
+    else if(father_id == "" && mother_id != "") // male or female, mother only
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -182,7 +182,7 @@ process MAKE_EXAMPLES_TRIO {
     done
     """
 
-    else if(is_male && father_id != "" && mother_id == "")
+    else if(is_male && father_id != "" && mother_id == "") // male, father only
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -192,13 +192,20 @@ process MAKE_EXAMPLES_TRIO {
     --sample_name_parent1 ${father_id} \
     --examples make_examples1.tfrecord@${task.cpus}.gz \
     --gvcf gvcf1.tfrecord@${task.cpus}.gz \
-    --regions "${autosomes} ${pr}X:1-${par1endX} ${pr}X:${par2start}-${par2end} ${pr}Y"
+    --regions "${autosomes} ${pr}X:1-${par1endX}"
+
+    $mecmd \
+    --reads_parent1=${bams[1]} \
+    --sample_name_parent1 ${father_id} \
+    --examples make_examples3.tfrecord@${task.cpus}.gz \
+    --gvcf gvcf3.tfrecord@${task.cpus}.gz \
+    --regions "${pr}X:${par2start}-${par2end} ${pr}Y"
 
     # males with only father provided may need singleton variant calling on X chromosome.
     """
 
     //if(!is_male && father_id != "" && mother_id == "")
-    else
+    else // female, father only
     """
     mkdir tmp2
     export TMPDIR=tmp2

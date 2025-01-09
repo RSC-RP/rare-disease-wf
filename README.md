@@ -21,7 +21,8 @@ to perform variant calling, starting from BAMs or FASTQs from trios, duos and/or
 singletons. DeepTrio/DeepVariant
 is used for variant calling and outputs one GVCF per sample.  GLNexus is then
 used to generate the joint called VCF.
-See `/testdata/GIAB_samples_small.csv` for an example of sample input.
+See `/testdata/GIAB_samples_small.csv` for an example of sample input. Paths to
+BAMS or FASTQs (or a mix) can be provided, and BAM indices are optional.
 
 The `modules/local` folder contains documented custom modules for this workflow,
 which I hope can be reused by our group.

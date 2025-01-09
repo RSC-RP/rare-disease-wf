@@ -1,7 +1,6 @@
-include { MAKE_EXAMPLES_TRIO } from '../modules/local/deepvariant/make_examples_trio/main'
-include { CALL_VARIANTS_TRIO } from '../modules/local/deepvariant/call_variants_trio/main'
-include { MAKE_EXAMPLES_SINGLE } from '../modules/local/deepvariant/make_examples_single/main'
-include { CALL_VARIANTS_SINGLE } from '../modules/local/deepvariant/call_variants_single/main'
+include { deeptrio } from "../subworkflows/make_examples_call_variants"
+include { deepvariant } from "../subworkflows/make_examples_call_variants"
+include { deepvariant as deepvariant1 } from "../subworkflows/make_examples_call_variants"
 include { POSTPROCESS_VARIANTS } from '../modules/local/deepvariant/postprocess_variants/main'
 include { GLNEXUS } from '../modules/local/glnexus/main'
 include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
@@ -20,18 +19,47 @@ workflow mecv_single {
         bam_ch
             .map{ [it[0] + [id: it[0].proband_id], it[1], it[2]] }
             .set{ bam_ch }
-        MAKE_EXAMPLES_SINGLE(bam_ch, fasta, fai, par_bed)
-        MAKE_EXAMPLES_SINGLE.out.proband_tfrecord
-            .join(MAKE_EXAMPLES_SINGLE.out.example_info)
-            .set{ single_tfrecords }
-        CALL_VARIANTS_SINGLE(single_tfrecords)
-        CALL_VARIANTS_SINGLE.out
+        deepvariant(bam_ch, fasta, fai, par_bed, false, false)
+        deepvariant.out
             .set{ cv_out }
     emit:
         cv_out
 }
 
-// optional workflow for variant calling on trios, duos, or singletons
+// Male trio; DeepTrio misses father's X chromosome
+workflow mecv_maletrio {
+    take:
+        bam_ch // tuple with meta, bams, and indices. Meta has proband_sex, proband_id, mother_id, father_id
+        fasta
+        fai
+        par_bed
+    main:
+        // family
+        deeptrio(bam_ch, fasta, fai)
+        // just the father
+        bam_ch
+            .map{ [it[0] + [id: it[0].father_id], it[1][1], it[2][1]] }
+            .set{ bam_dad }
+        deepvariant(bam_dad, fasta, fai, par_bed, true, false)
+        deepvariant.out
+           .map{ [[id: it[0].id, proband_id: it[0].proband_id, role: "parent"], it[1], it[2]] }
+           .set { cv_dad }
+        deeptrio.out
+           .join(cv_dad, remainder: true)
+           .map{
+             if(it.size == 5){
+                [it[0], it[1] + it[3], it[2] + it[4]]
+             }
+             else{
+                it
+             }
+           }
+           .set{ cv_out }
+    emit:
+        cv_out
+}
+
+// workflow for variant calling on trios, duos, or singletons
 workflow CALL_TRIOS {
     // Reference sequence for alignment and genotype calling, which may be different from Ensembl.
     Channel.fromPath(file(params.fasta_bams, checkIfExists: true))
@@ -133,42 +161,21 @@ workflow CALL_TRIOS {
         .map{ [ it[0], it[1].bam, it[1].index ] }
         .branch{ it ->
             single: it[0].father_id == "" & it[0].mother_id == ""
-            family: true
+            maletrio: ["Male", "male", "M"].contains(it[0].proband_sex) & it[0].father_id != "" & it[0].mother_id != ""
         }
         .set{bam_ch}
     
     // Variant calling on families
-    MAKE_EXAMPLES_TRIO(bam_ch.family, fasta_bams, fai_bams)
-    MAKE_EXAMPLES_TRIO.out.proband_tfrecord
-        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
-        .join(MAKE_EXAMPLES_TRIO.out.example_info)
-        .map{ [it[1], it[2], it[3], it[4]] }
-        .set{ all_proband_tfrecords }
-    MAKE_EXAMPLES_TRIO.out.father_tfrecord
-        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
-        .join(MAKE_EXAMPLES_TRIO.out.example_info)
-        .map{ [it[1], it[2], it[3], it[4]] }
-        .set{ all_father_tfrecords }
-    MAKE_EXAMPLES_TRIO.out.mother_tfrecord
-        .map{ [[proband_id: it[0].proband_id], it[0], it[1], it[2] ] }
-        .join(MAKE_EXAMPLES_TRIO.out.example_info)
-        .map{ [it[1], it[2], it[3], it[4]] }
-        .set{ all_mother_tfrecords }
-    all_proband_tfrecords
-        .concat(all_father_tfrecords, all_mother_tfrecords)
-        .filter{ it[0].id != "" }
-        .set{ all_me_tfrecords }
-    CALL_VARIANTS_TRIO(all_me_tfrecords)
-
-    // Variant calling on singletons
     Channel.fromPath(file(params.par_bed, checkIfExists: true))
         .collect()
         .set{ par_bed }
+    mecv_maletrio(bam_ch.maletrio, fasta_bams, fai_bams, par_bed)
+    // Variant calling on singletons
     mecv_single(bam_ch.single, fasta_bams, fai_bams, par_bed)
 
     // Join together families and singletons
-    CALL_VARIANTS_TRIO.out
-        .concat(mecv_single.out)
+    mecv_single.out
+        .concat(mecv_maletrio.out)
         .set{ call_variants_out }
 
     // Postprocess both together
