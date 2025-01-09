@@ -51,7 +51,7 @@ workflow mecv_maletrio {
                 [it[0], it[1] + it[3], it[2] + it[4]]
              }
              else{
-                it
+                [it[0], it[1], it[2]]
              }
            }
            .set{ cv_out }
