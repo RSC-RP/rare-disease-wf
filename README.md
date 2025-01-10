@@ -96,15 +96,6 @@ Load the conda environment.
 mamba activate nextflow_raredisease
 ```
 
-You should also copy over the custom apptainer images for this workflow before running the workflow for the first time
-(replacing "mylab" with your association):
-
-``` bash
-mkdir -p /data/hps/assoc/private/mylab/container/rare-disease-wf/
-
-cp /data/hps/assoc/public/bioinformatics/container/rare-disease-wf/* /data/hps/assoc/private/mylab/container/rare-disease-wf/
-```
-
 This is how you would run variant calling:
 
 ``` bash
@@ -125,6 +116,13 @@ nextflow \
     -profile sasquatch \
     -resume
 ```
+
+Note that by default, Apptainer will look for images in a public cache on the
+bioinformatics association.  If you are modifying the workflow and need some
+additional images, you will have to make your own cache in your own association
+so that you have write access.  You will probably want to copy images from
+the bioinformatics association to your association in that case so that you
+don't have to re-download everything. See `singularity.cacheDir` in `sasquatch.config`.
 
 ## Outputs
 
