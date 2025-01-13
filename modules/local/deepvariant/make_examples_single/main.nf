@@ -80,8 +80,18 @@ process MAKE_EXAMPLES_SINGLE {
         regions = "--regions \"${pr}2:179300000-179600000 ${pr}16:450000-470000 ${pr}X:122530000-122550000\""
         chunk = '1'
     }
+    else if(is_male){
+        regions = ["--regions",
+                   "\"${pr}1 ${pr}2 ${pr}3 ${pr}4 ${pr}5 ${pr}6 ${pr}7 ${pr}8 ${pr}9 ${pr}10",
+                   "${pr}11 ${pr}12 ${pr}13 ${pr}14 ${pr}15 ${pr}16 ${pr}17 ${pr}18 ${pr}19",
+                   "${pr}20 ${pr}21 ${pr}22 ${pr}X ${pr}Y\""].join(' ')
+        chunk = '1'
+    }
     else{
-        regions = ''
+        regions = ["--regions",
+                   "\"${pr}1 ${pr}2 ${pr}3 ${pr}4 ${pr}5 ${pr}6 ${pr}7 ${pr}8 ${pr}9 ${pr}10",
+                   "${pr}11 ${pr}12 ${pr}13 ${pr}14 ${pr}15 ${pr}16 ${pr}17 ${pr}18 ${pr}19",
+                   "${pr}20 ${pr}21 ${pr}22 ${pr}X\""].join(' ')
         chunk = '1'
     }
 
