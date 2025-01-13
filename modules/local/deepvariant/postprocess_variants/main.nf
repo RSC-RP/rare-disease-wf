@@ -7,6 +7,7 @@ process POSTPROCESS_VARIANTS {
     tuple val(meta), path(cv_tfrecord), path(gvcf_tfrecord)
     path(fasta_ensembl)
     path(fai_ensembl)
+    path(par_bed)
 
     output:
     tuple val(meta), path(out_gvcf), path("${out_gvcf}.tbi")
@@ -25,6 +26,17 @@ process POSTPROCESS_VARIANTS {
     // --cpus needs to be set to 0 if not using parallel processing
     pvcpu = task.cpus == 1 ? 0 : task.cpus
 
+    // haploid contigs for males
+    is_male = meta.id == meta.sex == "Male" || meta.sex == "male" || meta.sex == "M"
+    if(is_male){
+        pr = params.chromnames == "ucsc" ? "chr" : ""
+        hapstring = "--haploid_contigs=\"${pr}X,${pr}Y\" --par_regions_bed=\"${par_bed}\""
+    }
+    else{
+        assert meta.id == meta.sex == "Female" || meta.sex == "female" || meta.sex == "F"
+        hapstring = ""
+    }
+
     """
     mkdir tmp
     export TMPDIR=tmp
@@ -37,6 +49,7 @@ process POSTPROCESS_VARIANTS {
         --outfile temp.vcf.gz \
         --nonvariant_site_tfrecord_path "gvcf\${value}.tfrecord@${gvcf_shards}.gz" \
         --gvcf_outfile temp.gvcf.gz \
+        $hapstring \
         --cpus $pvcpu
 
         if test -f "$out_gvcf"; then

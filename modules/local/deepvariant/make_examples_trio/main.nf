@@ -27,10 +27,10 @@ process MAKE_EXAMPLES_TRIO {
     def proband_id = meta.proband_id
     def father_id = meta.father_id
     def mother_id = meta.mother_id
-    meta2 = [id: proband_id, proband_id: proband_id, role: "child"]
+    meta2 = [id: proband_id, proband_id: proband_id, role: "child", sex: meta.proband_sex]
     meta3 = [proband_id: proband_id]
-    meta4 = [id: father_id, proband_id: proband_id, role: "parent"]
-    meta5 = [id: mother_id, proband_id: proband_id, role: "parent"]
+    meta4 = [id: father_id, proband_id: proband_id, role: "parent", sex: "Male"]
+    meta5 = [id: mother_id, proband_id: proband_id, role: "parent", sex: "Female"]
     if(params.annovar_buildver == "hg19"){
         par1endX = 2734539
         startX = 2734540

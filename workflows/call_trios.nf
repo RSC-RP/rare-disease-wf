@@ -146,7 +146,7 @@ workflow CALL_TRIOS {
         .set{ call_variants_out }
 
     // Postprocess both together
-    POSTPROCESS_VARIANTS(call_variants_out, fasta_bams, fai_bams)
+    POSTPROCESS_VARIANTS(call_variants_out, fasta_bams, fai_bams, par_bed)
     POSTPROCESS_VARIANTS.out
         .map{ [it[1], it[2]] }
         .collect()
