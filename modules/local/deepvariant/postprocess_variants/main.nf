@@ -22,6 +22,9 @@ process POSTPROCESS_VARIANTS {
     cv_shards = cv_tfrecord[0].simpleName.replaceFirst(~/.*\-of\-/, "").toInteger()
     gvcf_shards = gvcf_tfrecord[0].name.replaceFirst(".gz", "").replaceFirst(~/.*\-of\-/, "").toInteger()
 
+    // --cpus needs to be set to 0 if not using parallel processing
+    pvcpu = task.cpus == 1 ? 0 : task.cpus
+
     """
     mkdir tmp
     export TMPDIR=tmp
@@ -33,7 +36,8 @@ process POSTPROCESS_VARIANTS {
         --infile "call_variants\${value}_${sample_id}@${cv_shards}.tfrecord.gz" \
         --outfile temp.vcf.gz \
         --nonvariant_site_tfrecord_path "gvcf\${value}.tfrecord@${gvcf_shards}.gz" \
-        --gvcf_outfile temp.gvcf.gz
+        --gvcf_outfile temp.gvcf.gz \
+        --cpus $pvcpu
 
         if test -f "$out_gvcf"; then
             mv $out_gvcf temp1.gvcf.gz
