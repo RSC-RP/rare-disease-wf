@@ -27,13 +27,13 @@ process POSTPROCESS_VARIANTS {
     pvcpu = task.cpus == 1 ? 0 : task.cpus
 
     // haploid contigs for males
-    is_male = meta.id == meta.sex == "Male" || meta.sex == "male" || meta.sex == "M"
+    is_male = meta.sex == "Male" || meta.sex == "male" || meta.sex == "M"
     if(is_male){
         pr = params.chromnames == "ucsc" ? "chr" : ""
         hapstring = "--haploid_contigs=\"${pr}X,${pr}Y\" --par_regions_bed=\"${par_bed}\""
     }
     else{
-        assert meta.id == meta.sex == "Female" || meta.sex == "female" || meta.sex == "F"
+        assert meta.sex == "Female" || meta.sex == "female" || meta.sex == "F"
         hapstring = ""
     }
 
