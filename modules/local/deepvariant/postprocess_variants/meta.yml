@@ -29,6 +29,15 @@ input:
   - gvcf_record:
       type: path
       description: List of gvcf tfrecord files.
+  - fasta_ensembl:
+      type: path
+      description: FASTA of reference genome.
+  - fai_ensembl:
+      type: path
+      description: FAIDX index of reference genome.
+  - par_bed:
+      type: path
+      description: BED file listing regions of sex chromosomes to be treated as autosomal.
 output:
   - out_gvcf:
       type: path

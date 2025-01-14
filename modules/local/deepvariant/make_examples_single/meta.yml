@@ -32,6 +32,15 @@ input:
   - fai_bams:
       type: path
       description: FAI index of reference genome.
+  - par_bed:
+      type: path
+      description: BED file listing regions of sex chromosomes to be treated as autosomal.
+  - x_only:
+      type: boolean
+      description: True if only the X chromosome should be genotyped.
+  - y_only:
+      type: boolean
+      description: True if only the Y chromosome should be genotyped.
 - output:
   - proband_tfrecord:
       type: tuple
