@@ -79,8 +79,7 @@ this dataset, the only things you have to change are the `workDir` and `assoc`
 in `sasquatch.config`.
 
 When you are ready to run the workflow, you may want to start a `screen` or `tmux`
-session so that you can close the window if needed.  Use `qsub` to start an interactive
-session, and give it at least 8 hours or so of walltime.
+session so that you can close the window if needed.
 
 Set up the conda environment for Nextflow:
 
