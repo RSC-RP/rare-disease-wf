@@ -21,7 +21,8 @@ to perform variant calling, starting from BAMs or FASTQs from trios, duos and/or
 singletons. DeepTrio/DeepVariant
 is used for variant calling and outputs one GVCF per sample.  GLNexus is then
 used to generate the joint called VCF.
-See `/testdata/GIAB_samples_small.csv` for an example of sample input.
+See `/testdata/GIAB_samples_small.csv` for an example of sample input. Paths to
+BAMS or FASTQs (or a mix) can be provided, and BAM indices are optional.
 
 The `modules/local` folder contains documented custom modules for this workflow,
 which I hope can be reused by our group.
@@ -95,15 +96,6 @@ Load the conda environment.
 mamba activate nextflow_raredisease
 ```
 
-You should also copy over the custom apptainer images for this workflow before running the workflow for the first time
-(replacing "mylab" with your association):
-
-``` bash
-mkdir -p /data/hps/assoc/private/mylab/container/rare-disease-wf/
-
-cp /data/hps/assoc/public/bioinformatics/container/rare-disease-wf/* /data/hps/assoc/private/mylab/container/rare-disease-wf/
-```
-
 This is how you would run variant calling:
 
 ``` bash
@@ -124,6 +116,13 @@ nextflow \
     -profile sasquatch \
     -resume
 ```
+
+Note that by default, Apptainer will look for images in a public cache on the
+bioinformatics association.  If you are modifying the workflow and need some
+additional images, you will have to make your own cache in your own association
+so that you have write access.  You will probably want to copy images from
+the bioinformatics association to your association in that case so that you
+don't have to re-download everything. See `singularity.cacheDir` in `sasquatch.config`.
 
 ## Outputs
 

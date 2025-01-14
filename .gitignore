@@ -3,3 +3,9 @@ log/
 logs/
 *.code-workspace
 .Rproj.user
+.swp
+*.bam
+*.bai
+*.gz
+*.fastq
+*.fq
