@@ -1,6 +1,7 @@
 process MAKE_EXAMPLES_TRIO {
     tag "$meta.proband_id"
     container = "docker://google/deepvariant:deeptrio-1.8.0-gpu"
+    label "make_examples"
 
     input:
     tuple val(meta), path(bams), path(bais) // meta has proband_sex, proband_id, father_id, mother_id
@@ -21,15 +22,15 @@ process MAKE_EXAMPLES_TRIO {
         assert meta.proband_sex == "Female" || meta.proband_sex == "female" || meta.proband_sex == "F"
     }
     if(params.test_bams){
-        assert is_male && meta.proband_id == "HG002" && bams[0].size() < 50000000
+        assert is_male && meta.proband_id.startsWith("HG00") && bams[0].size() < 50000000
     }
     def proband_id = meta.proband_id
     def father_id = meta.father_id
     def mother_id = meta.mother_id
-    meta2 = [id: proband_id, proband_id: proband_id, role: "child"]
+    meta2 = [id: proband_id, proband_id: proband_id, role: "child", sex: meta.proband_sex]
     meta3 = [proband_id: proband_id]
-    meta4 = [id: father_id, proband_id: proband_id, role: "parent"]
-    meta5 = [id: mother_id, proband_id: proband_id, role: "parent"]
+    meta4 = [id: father_id, proband_id: proband_id, role: "parent", sex: "Male"]
+    meta5 = [id: mother_id, proband_id: proband_id, role: "parent", sex: "Female"]
     if(params.annovar_buildver == "hg19"){
         par1endX = 2734539
         startX = 2734540
@@ -58,7 +59,11 @@ process MAKE_EXAMPLES_TRIO {
     autosomes = "${pr}1 ${pr}2 ${pr}3 ${pr}4 ${pr}5 ${pr}6 ${pr}7 ${pr}8 ${pr}9 ${pr}10 ${pr}11 ${pr}12 ${pr}13 ${pr}14 ${pr}15 ${pr}16 ${pr}17 ${pr}18 ${pr}19 ${pr}20 ${pr}21 ${pr}22"
 
     // Set up code that will be the same for every run of make_examples
-    mecmd = "time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples --mode calling --ref ${fasta_bams} --channel_list=read_base,base_quality,mapping_quality,strand,read_supports_variant,base_differs_from_ref,insert_size --pileup_image_height_child 100 --pileup_image_height_parent 100 --task {} --reads=${bams[0]} --sample_name ${proband_id} $args"
+    mecmd = ["time seq 0 ${task.cpus - 1} | parallel -q --halt 2 --line-buffer make_examples",
+             "--mode calling --ref ${fasta_bams}",
+             "--channel_list=read_base,base_quality,mapping_quality,strand,read_supports_variant,base_differs_from_ref,insert_size",
+             "--pileup_image_height_child 100 --pileup_image_height_parent 100 --task {}",
+             "--reads=${bams[0]} --sample_name ${proband_id} $args"].join(' ').trim()
     
     // Tiny example region of the genome for demo
     if(params.test_bams)
@@ -92,7 +97,7 @@ process MAKE_EXAMPLES_TRIO {
     """
 
     // Full genome, with sex chromosome handled based on proband sex and trio/duo status
-    else if(is_male && father_id != "" && mother_id != "")
+    else if(is_male && father_id != "" && mother_id != "") // male, both parents
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -141,7 +146,7 @@ process MAKE_EXAMPLES_TRIO {
     rm make_examples4_parent2.tfrecord*.gz
     """
 
-    else if(!is_male && father_id != "" && mother_id != "")
+    else if(!is_male && father_id != "" && mother_id != "") // female, both parents
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -156,7 +161,7 @@ process MAKE_EXAMPLES_TRIO {
     --regions "${autosomes} ${pr}X"
     """
 
-    else if(father_id == "" && mother_id != "")
+    else if(father_id == "" && mother_id != "") // male or female, mother only
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -177,7 +182,7 @@ process MAKE_EXAMPLES_TRIO {
     done
     """
 
-    else if(is_male && father_id != "" && mother_id == "")
+    else if(is_male && father_id != "" && mother_id == "") // male, father only
     """
     mkdir tmp2
     export TMPDIR=tmp2
@@ -187,13 +192,20 @@ process MAKE_EXAMPLES_TRIO {
     --sample_name_parent1 ${father_id} \
     --examples make_examples1.tfrecord@${task.cpus}.gz \
     --gvcf gvcf1.tfrecord@${task.cpus}.gz \
-    --regions "${autosomes} ${pr}X:1-${par1endX} ${pr}X:${par2start}-${par2end} ${pr}Y"
+    --regions "${autosomes} ${pr}X:1-${par1endX}"
+
+    $mecmd \
+    --reads_parent1=${bams[1]} \
+    --sample_name_parent1 ${father_id} \
+    --examples make_examples3.tfrecord@${task.cpus}.gz \
+    --gvcf gvcf3.tfrecord@${task.cpus}.gz \
+    --regions "${pr}X:${par2start}-${par2end} ${pr}Y"
 
     # males with only father provided may need singleton variant calling on X chromosome.
     """
 
     //if(!is_male && father_id != "" && mother_id == "")
-    else
+    else // female, father only
     """
     mkdir tmp2
     export TMPDIR=tmp2
