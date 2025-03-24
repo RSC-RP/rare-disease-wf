@@ -2,10 +2,10 @@ process FILTER_PATHOGENIC {
     container "https://depot.galaxyproject.org/singularity/python:3.9"
 
     // Default filtering thresholds
-    params.mvp_thresh = 0.9
-    params.cadd_thresh = 7
-    params.dann_thresh = 0.999
-    params.gerp_thresh = 5.5
+    //params.mvp_thresh = 0.9
+    //params.cadd_thresh = 7
+    //params.dann_thresh = 0.999
+    //params.gerp_thresh = 5.5
 
     input:
     path(invcf)
