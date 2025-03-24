@@ -1,6 +1,6 @@
 process GLNEXUS_ANNO_SLIVAR {
-    container = 'docker://brentp/rare-disease:v0.2.2'
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    container 'docker://brentp/rare-disease:v0.2.2'
+    shell '/bin/bash', '-euo', 'pipefail'
     publishDir "${params.outdir}/joint-by-chrom/", mode: 'copy'
 
     input:

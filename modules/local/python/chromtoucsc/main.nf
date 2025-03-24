@@ -1,7 +1,7 @@
 process CHROMNAMES_TO_UCSC{
     // chromToUcsc is in the bin folder
-    shell = ['/bin/bash', '-euo', 'pipefail']
-    container = 'docker://python:latest'
+    shell '/bin/bash', '-euo', 'pipefail'
+    container 'docker://python:latest'
 
     input: path(invcf)
     output: path(outvcf), emit: vcf

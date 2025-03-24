@@ -1,6 +1,6 @@
 process BCFTOOLS_CONCAT {
-    container = "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    container "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
+    shell '/bin/bash', '-euo', 'pipefail'
     label 'process_single'
 
     input:

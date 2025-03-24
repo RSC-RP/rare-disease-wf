@@ -1,6 +1,6 @@
 process BCFTOOLS_ANNOTATE_INFO {
-    container = "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    container "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
+    shell '/bin/bash', '-euo', 'pipefail'
 
     input:
         path(vcf)      // Input VCFs
