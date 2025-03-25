@@ -22,9 +22,6 @@ include { INCIDENTAL_FINDINGS } from '../modules/local/R/incidental_findings/mai
 workflow index_split{
     take:
         vcf_ch
-    emit:
-        vcf_ch
-        vcf_ch_sp
     main:
         // Reference sequence for alignment and genotype calling, which may be different from Ensembl.
         fai_file2 = file("${params.fasta_bams}.fai")
@@ -53,6 +50,9 @@ workflow index_split{
         SPLIT(ZIP_INDEX_PUBLISH.out, fai_bams)
         SPLIT.out
             .set{ vcf_ch_sp }
+    emit:
+        vcf_ch
+        vcf_ch_sp
 }
 
 // workflow for QC
@@ -76,13 +76,13 @@ workflow merge_vcfs {
     take:
         vcf_ch_sp
         fai
-    emit:
-        vcf_ch
     main:
         CHROMNAMES(fai)
         FILEORDER(vcf_ch_sp, CHROMNAMES.out)
         BCFTOOLS_CONCAT(vcf_ch_sp, FILEORDER.out, file(params.vcf).simpleName)
             .set{ vcf_ch }
+    emit:
+        vcf_ch
 }
 
 // workflow for annotation
@@ -91,8 +91,6 @@ workflow annotate {
         vcf_ch_sp
         slivar_zip
         fai
-    emit:
-        vcf_ch_sp
     main:
         // Convert from list to channel emitting individual items
         vcf_ch_sp
@@ -153,6 +151,8 @@ workflow annotate {
             // Export annotated VCF before filtering
             ZIP_INDEX_PUBLISH(merge_vcfs.out, 'annotated', 'view')
         }
+    emit:
+        vcf_ch_sp
 }
 
 // Short workflows for publishing after filtering
@@ -160,7 +160,6 @@ workflow publish_mendelian {
     take:
         vcf_ch_sp
         fai
-    emit: vcf_ch
 
     main:
     // Concatenate individual VCFs into one
@@ -169,13 +168,14 @@ workflow publish_mendelian {
     ZIP_INDEX_PUBLISH(merge_vcfs.out, 'mendelian', 'view')
     ZIP_INDEX_PUBLISH.out
         .set{ vcf_ch }
+
+    emit: vcf_ch
 }
 
 workflow publish_comphet {
     take:
         vcf_ch_sp
         fai
-    emit: vcf_ch
 
     main:
     if(params.trios_present){
@@ -189,6 +189,8 @@ workflow publish_comphet {
         Channel.fromPath('dummy.vcf.gz')
             .set{ vcf_ch }
     }
+
+    emit: vcf_ch
 }
 
 // subworkflow for incidental findings
@@ -212,9 +214,6 @@ workflow filtervcf {
         ped_ch
         slivar_zip
         fai
-    emit:
-        vcf_ch_mendelian
-        vcf_ch_comphet
     main:
         // Convert from list to channel emitting individual items
         vcf_ch_sp
@@ -247,6 +246,9 @@ workflow filtervcf {
         publish_comphet(vcf_ch_sp_comphet, fai)
         publish_comphet.out
             .set{ vcf_ch_comphet }
+    emit:
+        vcf_ch_mendelian
+        vcf_ch_comphet
 }
 
 // main workflow
