@@ -9,10 +9,8 @@ process BCFTOOLS_CONCAT {
         val(prefix)
     output: path(outvcf), emit: vcf
 
-    exec:
-    outvcf = "${prefix}.concat.vcf.gz"
-
     script:
+    outvcf = "${prefix}.concat.vcf.gz"
     """
 bcftools concat --threads $task.cpus --output $outvcf -Oz $vcfstring
     """
