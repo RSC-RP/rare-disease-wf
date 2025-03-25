@@ -1,6 +1,6 @@
 process PAD_VCF_INDELS {
-    shell = ['/bin/bash', '-euo', 'pipefail']
-    container = 'https://depot.galaxyproject.org/singularity/pyfaidx:0.7.1--pyh5e36f6f_0'
+    shell '/bin/bash', '-euo', 'pipefail'
+    container 'https://depot.galaxyproject.org/singularity/pyfaidx:0.7.1--pyh5e36f6f_0'
 
     input:
         path(invcf)

@@ -1,6 +1,6 @@
 process BCFTOOLS_ANNOTATE_INFO {
-    container = "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    container "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
+    shell '/bin/bash', '-euo', 'pipefail'
 
     input:
         path(vcf)      // Input VCFs
@@ -9,11 +9,9 @@ process BCFTOOLS_ANNOTATE_INFO {
         val(columns)   // comma-separated list of info columns to transfer
     output: path(outvcf), emit: vcf
 
-    exec:
+    script:
     prefix = vcf.simpleName
     outvcf = "${prefix}.bcfanno.vcf"
-
-    script:
     """
 # see https://github.com/samtools/bcftools/issues/1199#issuecomment-624713745
 bcftools query -f'%CHROM\t%POS\n' $vcf > sites.txt

@@ -1,5 +1,5 @@
 process LIFTOVER_HG19_TO_HG38 {
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    shell '/bin/bash', '-euo', 'pipefail'
     container 'https://depot.galaxyproject.org/singularity/picard:2.27.4--hdfd78af_0'
 
     input:

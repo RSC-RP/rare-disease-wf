@@ -11,10 +11,8 @@ process SLIVAR_TSV {
     output:
     path(slivar_tsv)
 
-    exec:
-    slivar_tsv = "${vcf_mendelian[0].simpleName}.slivar.tsv"
-
     script:
+    slivar_tsv = "${vcf_mendelian[0].simpleName}.slivar.tsv"
     // Don't filter by impactful and genic since we already did pathogenicity filter.
     cmd =
     """

@@ -1,5 +1,5 @@
 process SPLIT {
-    container = "https://depot.galaxyproject.org/singularity/bcftools:1.9--ha228f0b_4"
+    container "https://depot.galaxyproject.org/singularity/bcftools:1.9--ha228f0b_4"
 
     input: tuple(path(vcf), path(tbi))
            path(fai)

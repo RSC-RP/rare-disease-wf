@@ -1,6 +1,6 @@
 process BCFTOOLS_CONCAT {
-    container = "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
-    shell = ['/bin/bash', '-euo', 'pipefail']
+    container "https://depot.galaxyproject.org/singularity/bcftools:1.17--haef29d1_0"
+    shell '/bin/bash', '-euo', 'pipefail'
     label 'process_single'
 
     input:
@@ -9,10 +9,8 @@ process BCFTOOLS_CONCAT {
         val(prefix)
     output: path(outvcf), emit: vcf
 
-    exec:
-    outvcf = "${prefix}.concat.vcf.gz"
-
     script:
+    outvcf = "${prefix}.concat.vcf.gz"
     """
 bcftools concat --threads $task.cpus --output $outvcf -Oz $vcfstring
     """

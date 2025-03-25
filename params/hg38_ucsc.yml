@@ -1,0 +1,69 @@
+# If you aren't sure how to set some of these, look at conf/test.config for
+# paths to example files. Anything null in this example should be filled in, and
+# you may wish to modify some other parameters.
+
+assoc: 'mylab'   # name of your association
+
+# Variant filtering; you can wait to fill these in if you are running variant calling first.
+vcf: null             # path to your vcf
+chromnames: 'ucsc'    # Format for chromosome names input. 'g1k' = 1000 Genomes. Alternatives are 'ensembl' and 'ucsc'. Use 'ucsc' if chromosome names start with 'chr'
+sort: false           # Whether to sort the VCF before processing.
+ped: null             # path to pedigree file for samples in VCF
+trios_present: null      # Set to false if pedigree contains no trios (duos or singletons only), or true if it contains trios.
+metadata_tab: null       # path to table with metadata on each sample
+metadata_columns: null   # names of columns
+do_incidental: null      # true if you want to check incidental findings, false if not
+incidental_samples: null # path to file listing samples for which to run incidental findings
+export_prefilt: null     # true if you want to export the annotated VCF before filtering, false if not
+
+# BAMs and variant calling; ignore if only running variant filtering.
+sample_bams: null         # path to CSV file listing bams for import
+deepvar_model: null       # Should be 'WGS' or 'WES'.
+cohort_name: null         # string to use for naming output VCFs
+make_examples_nshards: 32 # threads to use in DeepVariant
+# FASTA that was used (or should be used) for aligning the BAMs
+fasta_bams: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa'
+# BWA index to go with this FASTA
+bwa_index: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/UCSC/hg38/Sequence/BWAIndex'
+par_bed: 'assets/GRCh38_PAR.bed' # Haploid regions for DeepVariant
+# Set to true to use DeepVariantWGS/DeepVariantWES, or false to use DeepVariant_unfiltered
+glnexus_filter: null
+
+# output directory
+outdir: 'results'
+
+# Ensembl reference
+fasta_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+gff_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Genes.gff3'
+
+# SnpEff
+snpEff_dir: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/SnpEff/'
+
+# Gnotation and selfchain files for slivar
+slivar_zip: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Slivar/gnomad.hg38.v2.zip'
+slivar_selfchain: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Slivar/selfchain-LCR.hg38.bed'
+
+# AnnoVar database files
+annovar_db: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/annovar/humandb'
+annovar_buildver: 'hg38'
+
+# Slivar filtering parameters
+maf_recessive: "0.001"
+maf_dominant: "0.00002"
+maf_denovo: "0.001"
+comphet_nhomalt: "10"
+
+# Pathogenicity filtering parameters
+mvp_thresh: 0.9
+cadd_thresh: 7
+dann_thresh: 0.999
+gerp_thresh: 5.5
+
+# UMAP parameters
+umap_seed: 3334444
+umap_min_call_rate: 0.95
+umap_n_exons: 5000
+umap_n_pcs: 50
+
+# File used if UCSC chromosome names need to be changed to Ensembl
+chrom_convert: 'assets/chrom_conversion.txt'
