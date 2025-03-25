@@ -31,6 +31,9 @@ workflow index_split{
                 .set{ fai_bams }
         }
         else {
+            Channel.fromPath(file(params.fasta_bams, checkIfExists: true))
+                .collect()
+                .set{ fasta_bams }
             // Run Samtools Faidx
             SAMTOOLS_FAIDX(fasta_bams)
             SAMTOOLS_FAIDX.out.fai
@@ -281,6 +284,9 @@ workflow FILTER_VCF {
             .set{ fai_ensembl }
     }
     else {
+        Channel.fromPath(file(params.fasta_ensembl, checkIfExists: true))
+            .collect()
+            .set{ fasta_ensembl }
         // Run Samtools Faidx
         SAMTOOLS_FAIDX(fasta_ensembl)
         SAMTOOLS_FAIDX.out.fai
