@@ -22,10 +22,10 @@ deepvar_model: null       # Should be 'WGS' or 'WES'.
 cohort_name: null         # string to use for naming output VCFs
 make_examples_nshards: 32 # threads to use in DeepVariant
 # FASTA that was used (or should be used) for aligning the BAMs
-fasta_bams: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh37.dna.primary_assembly.fa'
+fasta_bams: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
 # BWA index to go with this FASTA
-bwa_index: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Sequence/BWAIndex'
-par_bed: 'assets/GRCh37_PAR.bed' # Haploid regions for DeepVariant
+bwa_index: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Sequence/BWAIndex'
+par_bed: 'assets/GRCh38_PAR.bed' # Haploid regions for DeepVariant
 # Set to true to use DeepVariantWGS/DeepVariantWES, or false to use DeepVariant_unfiltered
 glnexus_filter: null
 
@@ -33,22 +33,19 @@ glnexus_filter: null
 outdir: 'results'
 
 # Ensembl reference
-fasta_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh37.dna.primary_assembly.fa'
-gff_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/Homo_sapiens.GRCh37.87.gff3'
+fasta_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+gff_ensembl: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Genes.gff3'
 
 # SnpEff
-snpEff_dir: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Annotation/SnpEff/'
+snpEff_dir: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/SnpEff/'
 
 # Gnotation and selfchain files for slivar
-slivar_zip: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Annotation/Slivar/gnomad.hg37.zip'
-slivar_selfchain: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Annotation/Slivar/selfchain-LCR.hg19.bed'
+slivar_zip: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Slivar/gnomad.hg38.v2.zip'
+slivar_selfchain: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh38/Annotation/Slivar/selfchain-LCR.hg38.bed'
 
 # AnnoVar database files
 annovar_db: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/annovar/humandb'
-annovar_buildver: 'hg19'
-
-# MVP pathogenicity prediction score table
-mvp_tab: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Annotation/MVP/MVP_score_hg19.txt'
+annovar_buildver: 'hg38'
 
 # Slivar filtering parameters
 maf_recessive: "0.001"
