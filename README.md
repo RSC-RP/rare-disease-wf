@@ -75,8 +75,8 @@ The example dataset is a VCF, but it is fine to use a gzipped VCF or a BCF.
 
 **To run an example dataset:** This workflow comes with tiny example BAMs and a
 VCF from the Genome in a Bottle (GIAB) Ashkenazim trio. To run the pipeline on
-this dataset, the only things you have to change are the `workDir` and `assoc`
-in `sasquatch.config`.
+this dataset, use the `test` profile, and pass in your association with the
+`assoc` param.
 
 When you are ready to run the workflow, you may want to start a `screen` or `tmux`
 session so that you can close the window if needed.
@@ -102,17 +102,19 @@ nextflow \
     -c nextflow.config \
     run main.nf \
     -entry calltrios \
-    -profile sasquatch \
+    -profile sasquatch,test \
+    --assoc "mylab" \
     -resume
 ```
 
-And this is how you would run trio analysis:
+And this is how you would run variant filtering and trio analysis:
 
 ``` bash
 nextflow \
     -c nextflow.config \
     run main.nf \
     -profile sasquatch \
+    --assoc "mylab" \
     -resume
 ```
 
@@ -121,7 +123,7 @@ bioinformatics association.  If you are modifying the workflow and need some
 additional images, you will have to make your own cache in your own association
 so that you have write access.  You will probably want to copy images from
 the bioinformatics association to your association in that case so that you
-don't have to re-download everything. See `singularity.cacheDir` in `sasquatch.config`.
+don't have to re-download everything. See `singularity.cacheDir` in `conf/sasquatch.config`.
 
 ## Outputs
 

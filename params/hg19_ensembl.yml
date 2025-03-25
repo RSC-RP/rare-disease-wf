@@ -1,5 +1,6 @@
 # If you aren't sure how to set some of these, look at conf/test.config for
-# paths to example files.
+# paths to example files. Anything null in this example should be filled in, and
+# you may wish to modify some other parameters.
 
 assoc: 'mylab'   # name of your association
 
@@ -24,6 +25,8 @@ fasta_bams: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ense
 # BWA index to go with this FASTA
 bwa_index: '/data/hps/assoc/public/bioinformatics/annotations/Homo_sapiens/Ensembl/GRCh37/Sequence/BWAIndex'
 par_bed: 'assets/GRCh37_PAR.bed' # Haploid regions for DeepVariant
+# Set to true to use DeepVariantWGS/DeepVariantWES, or false to use DeepVariant_unfiltered
+glnexus_filter: null
 
 # output directory
 outdir: 'results'

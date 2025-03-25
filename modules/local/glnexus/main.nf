@@ -10,10 +10,16 @@ process GLNEXUS {
         path(outbcf)
     script:
         outbcf = "${cohort_name}.glnexus.bcf"
+        if(params.glnexus_filter){
+            mod = params.deepvar_model
+        }
+        else {
+            mod = '_unfiltered'
+        }
     """
     glnexus_cli \
         -t ${task.cpus} \
-        --config DeepVariant${params.deepvar_model} \
+        --config DeepVariant${mod} \
         *.gvcf.gz > ${outbcf}
     """
 
