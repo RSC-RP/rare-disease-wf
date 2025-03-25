@@ -130,6 +130,20 @@ nextflow \
     -resume
 ```
 
+By default, the work directory (temp directory with intermediate files) will
+be in your user directory in your association. However, you can modify it like
+so if you want:
+
+``` bash
+nextflow \
+    -c nextflow.config \
+    run main.nf \
+    -profile sasquatch \
+    -params-file params/myparams.yml \
+    -workDir /data/hps/path/to/some/place \
+    -resume
+```
+
 ### Notes on containers
 
 Note that by default, Apptainer will look for images in a public cache on the
