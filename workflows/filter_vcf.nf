@@ -226,12 +226,16 @@ workflow filtervcf {
         // Filtering steps and incidental findings
         FILTER_PATHOGENIC(vcf_ch_sp)
         if(params.do_incidental){
-            Channel.fromPath(file(params.incidental_samples), checkIfExists: true)
+            Channel.fromPath(file(params.incidental_samples, checkIfExists: true))
                 .set{ samples_ch }
             incidental(FILTER_PATHOGENIC.out.collect(), samples_ch, fai)
         }
+        Channel.fromPath(file(params.slivar_fn_loose, checkIfExists: true))
+            .collect()
+            .set{ slivar_fn_loose }
         SLIVAR_MENDEL_FILTER(FILTER_PATHOGENIC.out, ped_ch, slivar_zip,
-            params.maf_recessive, params.maf_dominant, params.maf_denovo, params.comphet_nhomalt)
+            params.maf_recessive, params.maf_dominant, params.maf_denovo, params.comphet_nhomalt,
+            slivar_fn_loose)
             .set{ vcf_ch_sp }
         
         // Convert back from individual items to list

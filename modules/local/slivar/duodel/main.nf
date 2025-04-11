@@ -1,5 +1,5 @@
 process SLIVAR_DUODEL {
-    container "https://depot.galaxyproject.org/singularity/slivar:0.2.7--h2eeb373_0"
+    container "https://depot.galaxyproject.org/singularity/slivar:0.3.1--h4e814b3_1"
     publishDir "$params.outdir", mode: 'copy', overwrite: true
     label 'process_single'
 
