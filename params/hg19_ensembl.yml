@@ -55,6 +55,8 @@ maf_recessive: "0.001"
 maf_dominant: "0.00002"
 maf_denovo: "0.001"
 comphet_nhomalt: "10"
+check_gq: true # Change to false to turn off checks on genotype depth, genotype quality, and allelic balance. Use with caution!
+slivar_fn_loose: './assets/slivar-functions-loose.js' # functions to use if check_gq = false
 
 # Pathogenicity filtering parameters
 mvp_thresh: 0.9

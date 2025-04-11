@@ -11,6 +11,7 @@ process SLIVAR_MENDEL_FILTER {
     val(maf_dominant)
     val(maf_denovo)
     val(comphet_nhomalt)
+    path(slivar_fn_loose)
 
     output:
     path(outmnd), emit: mendelian_vcf
@@ -20,6 +21,7 @@ process SLIVAR_MENDEL_FILTER {
     outmnd = "${invcf.simpleName}.mendelian.vcf"
     tempch1 = "${invcf.simpleName}.comphetpre.vcf"
     outcomphet = "${invcf.simpleName}.comphetpost.vcf"
+    slivarfn = params.check_gq ? '/opt/slivar/slivar-functions.js' : slivar_fn_loose.name
     //tmpdir = "$TMPDIR" // This points to /var/temp on Cybertron
     //println tmpdir
     cmd =
@@ -33,7 +35,7 @@ slivar expr --vcf $invcf \
     --pass-only \
     -g $slivar_zip \
     --info 'INFO.gnomad_popmax_af < 0.01 && variant.FILTER == "PASS" && variant.ALT[0] != "*"' \
-    --js /opt/slivar/slivar-functions.js \
+    --js $slivarfn \
     --family-expr 'denovo:variant.CHROM != "X" && variant.CHROM != "chrX" && fam.every(segregating_denovo) && INFO.gnomad_popmax_af < $maf_denovo' \
     --family-expr 'recessive:variant.CHROM != "X" && variant.CHROM != "chrX" && INFO.gnomad_popmax_af < $maf_recessive && fam.every(segregating_recessive)' \
     --family-expr 'x_denovo:(variant.CHROM == "X" || variant.CHROM == "chrX") && fam.every(segregating_denovo_x) && INFO.gnomad_popmax_af < $maf_denovo' \
@@ -51,7 +53,7 @@ slivar expr --vcf $invcf \
     --pass-only \
     -g $slivar_zip \
     --info 'INFO.gnomad_popmax_af < 0.01 && variant.FILTER == "PASS" && variant.ALT[0] != "*"' \
-    --js /opt/slivar/slivar-functions.js \
+    --js $slivarfn \
     --family-expr 'denovo:fam.every(segregating_denovo) && INFO.gnomad_popmax_af < $maf_denovo' \
     --trio 'comphet_side:comphet_side(kid, mom, dad) && INFO.gnomad_nhomalt < $comphet_nhomalt'
 
