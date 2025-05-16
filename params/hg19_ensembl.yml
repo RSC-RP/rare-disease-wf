@@ -10,6 +10,7 @@ chromnames: 'ensembl' # Format for chromosome names input. 'g1k' = 1000 Genomes.
 sort: false           # Whether to sort the VCF before processing.
 ped: null             # path to pedigree file for samples in VCF
 trios_present: null      # Set to false if pedigree contains no trios (duos or singletons only), or true if it contains trios.
+run_popstruct: null      # Set to true to do a UMAP of all samples, or false to skip that if you have very few samples
 metadata_tab: null       # path to table with metadata on each sample
 metadata_columns: null   # names of columns
 do_incidental: null      # true if you want to check incidental findings, false if not

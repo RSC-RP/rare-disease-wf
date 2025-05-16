@@ -64,14 +64,16 @@ workflow qc {
         vcf_ch // tuple of VCF and index
         metadata_ch
     main:
-        POP_STRUCT(vcf_ch,
-            "TxDb.Hsapiens.UCSC.${params.annovar_buildver}.knownGene",
-            metadata_ch,
-            params.metadata_columns,
-            params.umap_seed,
-            params.umap_min_call_rate,
-            params.umap_n_exons,
-            params.umap_n_pcs)
+        if(params.run_popstruct){
+            POP_STRUCT(vcf_ch,
+                "TxDb.Hsapiens.UCSC.${params.annovar_buildver}.knownGene",
+                metadata_ch,
+                params.metadata_columns,
+                params.umap_seed,
+                params.umap_min_call_rate,
+                params.umap_n_exons,
+                params.umap_n_pcs)
+        }
 }
 
 // workflow to merge VCFs into one file
